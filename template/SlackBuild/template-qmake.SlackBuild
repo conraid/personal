@@ -29,7 +29,7 @@ set -eu
 
 CWD=$(pwd)
 
-PRGNAM=${PRGNAM:-%PRGNAM%}
+PRGNAM=%PRGNAM%
 PRGNAM=$(echo $SRCNAM | tr A-Z a-z)
 VERSION=${VERSION:-%VERSION%}
 VERSION=$(echo $VERSION | tr - _)
