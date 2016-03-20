@@ -1,0 +1,23 @@
+--- rc.S.orig	2015-11-23 23:22:31.000000000 +0100
++++ rc.S	2015-11-26 10:16:58.494178021 +0100
+@@ -113,16 +113,16 @@ if [ -f /etc/crypttab -a -x /sbin/crypts
+     OPTS="${LUKSARRAY[3]}"
+     LUKSOPTS=""
+     if echo $OPTS | grep -wq ro ; then LUKSOPTS="${LUKSOPTS} --readonly" ; fi
++	if echo $OPTS | grep -wq discard ; then LUKSOPTS="${LUKSOPTS} --allow-discards" ; fi
+ 
+     # Skip LUKS volumes that were already unlocked (in the initrd):
+     /sbin/cryptsetup status $LUKS 2>/dev/null | head -n 1 | grep -q "is active" && continue
+     if /sbin/cryptsetup isLuks $DEV 2>/dev/null ; then
+       echo "Unlocking LUKS crypt volume '${LUKS}' on device '$DEV':"
+-      if [ -n "${PASS}" ]; then
+-        if [ -f ${PASS} ]; then
++      if [ -n "${PASS}" -a "${PASS}" != "none" ]; then
++        if [ -f "${PASS}" ]; then
+           /sbin/cryptsetup ${LUKSOPTS} --key-file=${PASS} luksOpen $DEV $LUKS
+-        elif [ "${PASS}" != "none" ]; then
+-          # A password field of 'none' indicates a line for swap:
++        else
+           echo "${PASS}" | /sbin/cryptsetup ${LUKSOPTS} luksOpen $DEV $LUKS
+         fi
+       else
