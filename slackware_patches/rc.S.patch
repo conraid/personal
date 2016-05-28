@@ -1,10 +1,10 @@
---- rc.S.orig	2015-11-23 23:22:31.000000000 +0100
-+++ rc.S	2015-11-26 10:16:58.494178021 +0100
-@@ -113,16 +113,16 @@ if [ -f /etc/crypttab -a -x /sbin/crypts
+--- rc.S.new	2016-05-28 00:24:30.000000000 +0200
++++ rc.S	2016-05-28 14:34:49.129830762 +0200
+@@ -114,16 +114,16 @@ if [ -f /etc/crypttab -a -x /sbin/crypts
      OPTS="${LUKSARRAY[3]}"
      LUKSOPTS=""
      if echo $OPTS | grep -wq ro ; then LUKSOPTS="${LUKSOPTS} --readonly" ; fi
-+	if echo $OPTS | grep -wq discard ; then LUKSOPTS="${LUKSOPTS} --allow-discards" ; fi
++        if echo $OPTS | grep -wq discard ; then LUKSOPTS="${LUKSOPTS} --allow-discards" ; fi
  
      # Skip LUKS volumes that were already unlocked (in the initrd):
      /sbin/cryptsetup status $LUKS 2>/dev/null | head -n 1 | grep -q "is active" && continue
