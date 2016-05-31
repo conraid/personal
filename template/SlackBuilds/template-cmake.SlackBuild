@@ -30,7 +30,7 @@ set -eu
 CWD=$(pwd)
 
 PKGNAM=%PKGNAM%
-PKGNAM=$(echo $PRGNAM | tr A-Z a-z)
+PKGNAM=$(echo $PKGNAM | tr A-Z a-z)
 VERSION=%VERSION%
 VERSION=$(echo $VERSION | tr - _)
 BUILD=${BUILD:-1}

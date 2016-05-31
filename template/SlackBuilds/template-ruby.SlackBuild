@@ -30,7 +30,7 @@ set -eu
 CWD=$(pwd)
 
 PKGNAM=%PKGNAM%
-PKGNAM=$(echo $PRGNAM | tr A-Z a-z)
+PKGNAM=$(echo $PKGNAM | tr A-Z a-z)
 VERSION=%VERSION%
 VERSION=$(echo $VERSION | tr - _)
 BUILD=${BUILD:-1}
@@ -73,7 +73,7 @@ gem install \
    --no-user-install \
    --install-dir $PKG/$DESTDIR \
    --bindir $PKG/usr/bin \
-   $CWD/$PRGNAM-$VERSION.gem
+   $CWD/$PKGNAM-$VERSION.gem
 
 find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF | cut -f 1 -d : | xargs -r strip --strip-unneeded 2> /dev/null || true
 find $PKG | xargs file | grep "current ar archive" | cut -f 1 -d : | xargs -r strip -g 2> /dev/null || true

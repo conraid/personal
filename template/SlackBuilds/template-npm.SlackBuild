@@ -29,8 +29,8 @@ set -eu
 
 CWD=$(pwd)
 
-PRGNAM=%PKGNAM%
-PKGNAM=node-$(echo $PRGNAM | tr A-Z a-z)
+PKGNAM=%PKGNAM%
+PKGNAM=node-$(echo $PKGNAM | tr A-Z a-z)
 VERSION=%VERSION%
 VERSION=$(echo $VERSION | tr - _)
 BUILD=${BUILD:-1}
@@ -52,9 +52,9 @@ fi
 rm -rf $PKG
 mkdir -p $TMP $PKG
 cd $TMP
-rm -rf $PRGNAM-$VERSION
-tar xvf $CWD/$PRGNAM-$VERSION.tar.gz || tar xvf $CWD/v$VERSION.tar.gz
-cd $PRGNAM-$VERSION
+rm -rf $PKGNAM-$VERSION
+tar xvf $CWD/$PKGNAM-$VERSION.tar.gz || tar xvf $CWD/v$VERSION.tar.gz
+cd $PKGNAM-$VERSION
 
 chown -R root:root .
 chmod -R u+w,go+r-w,a+X-s .
