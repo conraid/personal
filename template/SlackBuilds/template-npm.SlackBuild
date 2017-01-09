@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# Slackware build script for %PKGNAM%
+# Slackware build script for %PRGNAM%
 #
 # Copyright 2017 Corrado Franco (http://conraid.net)
 # All rights reserved.
@@ -29,9 +29,9 @@ set -eu
 
 CWD=$(pwd)
 
-PKGNAM=%PKGNAM%
-PKGNAM=node-$(echo $PKGNAM | tr A-Z a-z)
-VERSION=%VERSION%
+PRGNAM=%PRGNAM%
+PKGNAM=node-$(echo $PRGNAM | tr A-Z a-z)
+SRCVERSION=%VERSION%
 VERSION=$(echo $VERSION | tr - _)
 BUILD=${BUILD:-1}
 TAG=${TAG:-cf}
@@ -54,9 +54,9 @@ fi
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
-rm -rf $PKGNAM-$VERSION
-tar xvf $CWD/$PKGNAM-$VERSION.tar.gz || tar xvf $CWD/v$VERSION.tar.gz
-cd $PKGNAM-$VERSION
+rm -rf $PRGNAM-$SRCVERSION
+tar xvf $CWD/$PRGNAM-$SRCVERSION.tar.gz || tar xvf $CWD/v$SRCVERSION.tar.gz
+cd $PRGNAM-$SRCVERSION
 
 chown -R root:root .
 chmod -R u+w,go+r-w,a+X-s .
