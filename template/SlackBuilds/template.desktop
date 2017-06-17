@@ -1,27 +1,9 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=Putty
-Icon=putty
 Type=Service
-ServiceTypes=Plasma/LayoutTemplate
-X-Plasma-Shell=plasma-desktop
-X-Plasma-ContainmentCategories=desktop
-X-Plasma-ContainmentLayout-ExecuteOnCreation=dolphin $desktop, gwenview $pictures
-X-Plasma-ContainmentLayout-ShowAsExisting=true
-X-KDE-PluginInfo-Author=John Doe
-X-KDE-PluginInfo-Email=john@doe.org
-X-KDE-PluginInfo-Name=org.kde.plasma-desktop.CoolTemplate
-X-KDE-PluginInfo-Version=1.0
-X-KDE-PluginInfo-Website=http://john.doe.org
-X-KDE-PluginInfo-Category=
-X-KDE-PluginInfo-Depends=
-X-KDE-PluginInfo-License=GPL
-X-KDE-PluginInfo-EnabledByDefault=true
-
-[Desktop Entry]
-Version=1.6
-Name=NomeProgramma
-Comment=Questo è un commento
+Version=%VERSION%
+Name=%PRGNAME%
+Comment=This is a comment
 Exec=/home/utente/Documenti/exec.sh
 Icon=/home/utente/Immagine/icona.png
 Terminal=false

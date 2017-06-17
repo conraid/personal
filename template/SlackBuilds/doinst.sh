@@ -30,34 +30,36 @@ schema_install() {
   /etc/gconf/schemas/$SCHEMA \
   1>/dev/null
 }
+# Install schemas, if any
+schema_install blah.schemas
 
 # Update the desktop database:
-if [ -x usr/bin/update-desktop-database ]; then
-  chroot . /usr/bin/update-desktop-database -q /usr/share/applications > /dev/null 2>&1
+if [ -x /usr/bin/update-desktop-database ]; then
+  /usr/bin/update-desktop-database -q usr/share/applications > /dev/null 2>&1
 fi
 
 # Update the mime database:
-if [ -x usr/bin/update-mime-database ]; then
-  chroot . /usr/bin/update-mime-database /usr/share/mime >/dev/null 2>&1
+if [ -x /usr/bin/update-mime-database ]; then
+  /usr/bin/update-mime-database usr/share/mime >/dev/null 2>&1
 fi
 
 # Update icon cache if one exists
-if [ -r usr/share/icons/hicolor/icon-theme.cache ]; then
+if [ -e usr/share/icons/hicolor/icon-theme.cache ]; then
   if [ -x /usr/bin/gtk-update-icon-cache ]; then
-  	chroot . /usr/bin/gtk-update-icon-cache -t -f -q usr/share/icons/hicolor >/dev/null 2>&1
+  	/usr/bin/gtk-update-icon-cache -t -f -q usr/share/icons/hicolor >/dev/null 2>&1
   fi
 fi
 
 # Update schemas
 if [ -e usr/share/glib-2.0/schemas ]; then
   if [ -x /usr/bin/glib-compile-schemas ]; then
-  	chroot . /usr/bin/glib-compile-schemas usr/share/glib-2.0/schemas >/dev/null 2>&1
+  	/usr/bin/glib-compile-schemas usr/share/glib-2.0/schemas >/dev/null 2>&1
   fi
 fi
 
 # Plasma applet
 if [ -x /usr/bin/kbuildsycoca4 ]; then
-  chroot . /usr/bin/kbuildsycoca4
+  /usr/bin/kbuildsycoca4
 fi
 
 # Before perm, if necessary (config is not necessary)
@@ -67,8 +69,6 @@ config etc/XXX.conf.new
 for NEW in etc/XXX/*.new; do
   config $NEW
 done
-# Install schemas, if any
-schema_install blah.schemas
 
 # Add user and group (usually uid and gid are SBo suggests)
 if ! grep -q "^GROUPNAME:" etc/group; then
