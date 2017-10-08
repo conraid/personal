@@ -80,7 +80,7 @@ if [ -e $CWD/patches/ ]; then
   done
 fi
 
-# controllare cflags per qmake
+# Check cflags for qmake
 qmake PREFIX=/usr QMAKE_LIBS="$SLKLDFLAGS" QMAKE_CFLAGS="" QMAKE_CXXFLAGS="" QMAKE_CFLAGS_RELEASE="$SLKCFLAGS" QMAKE_CXXFLAGS_RELEASE="$SLKCFLAGS" -o Makefile $PKGNAM.pro
 
 make
