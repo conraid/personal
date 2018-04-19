@@ -30,7 +30,7 @@ set -eu
 CWD=$(pwd)
 
 PRGNAM=%PRGNAM%
-PKGNAM=$(echo $PRGNAM | tr A-Z a-z)
+PKGNAM=python-$(echo $PRGNAM | tr A-Z a-z)
 SRCVERSION=%VERSION%
 VERSION=$(echo $SRCVERSION | tr - _)
 BUILD=${BUILD:-1}
