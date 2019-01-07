@@ -2,7 +2,7 @@
 #
 # Slackware build script for %PRGNAM%
 #
-# Copyright 2018 Corrado Franco (http://conraid.net)
+# Copyright 2019 Corrado Franco (http://conraid.net)
 # All rights reserved.
 #
 # This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 
 set -eu
 
-CWD=$(pwd)
+cd $(dirname $0) ; CWD=$(pwd)
 
 PRGNAM=%PRGNAM%
 PKGNAM=node-$(echo $PRGNAM | tr A-Z a-z)
@@ -48,22 +48,33 @@ if [ -z ${ARCH:=""} ]; then
   *) ARCH=$( uname -m ) ;;
   esac
 fi
+
+# If the variable PRINT_PACKAGE_NAME is set, then this script will report what
+# the name of the created package would be, and then exit. This information
+# could be useful to other scripts.
+if [ ! -z "${PRINT_PACKAGE_NAME:-""}" ]; then
+  echo "$PKGNAM-$VERSION-$ARCH-$BUILD.txz"
+  exit 0
+fi
+
 [ "$ARCH" = "x86_64" ] && LIBDIRSUFFIX="64" || LIBDIRSUFFIX=""
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
-cd $TMP
-rm -rf $PRGNAM-$VERSION
-tar xvf $CWD/$PRGNAM-$VERSION.tar.gz || tar xvf $CWD/v$VERSION.tar.gz
-cd $PRGNAM-$VERSION
 
-chown -R root:root .
-chmod -R u+w,go+r-w,a+X-s .
+#cd $TMP
+#rm -rf $PRGNAM-$VERSION
+#tar xvf $CWD/$PRGNAM-$VERSION.tar.gz || tar xvf $CWD/v$VERSION.tar.gz
+#cd $PRGNAM-$VERSION
+#
+#chown -R root:root .
+#chmod -R u+w,go+r-w,a+X-s .
 
-DESTDIR=$PKG npm install --user root -g --no-bin-links $(npm pack | tail -1)
+#DESTDIR=$PKG npm install --user root -g --no-bin-links $(npm pack | tail -1)
+DESTDIR=$PKG npm install --user root -g --prefix $PKG/usr $CWD/$PKGNAM-$VERSION.tgz
 
 # Remove empty dir
-rmdir $PKG/usr/etc
+rmdir $PKG/usr/etc || true
 
 # Remove unneeded files.
 find $PKG/usr \( -name '.git*' -o -name '.travis.yml' \) -exec rm -f {} \;
@@ -76,7 +87,7 @@ find $PKG -name "package.json" \
             -i '{}' \;
 
 mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
-cp -a $DOCFILES $PKG/usr/doc/$PKGNAM-$VERSION || true
+#cp -a $DOCFILES $PKG/usr/doc/$PKGNAM-$VERSION || true
 cat $CWD/$PKGNAM.SlackBuild > $PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild
 
 mkdir -p $PKG/install
