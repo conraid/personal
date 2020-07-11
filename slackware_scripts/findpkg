@@ -1,0 +1,10 @@
+#!/bin/sh
+
+export GREP_COLORS="ms=01;29"
+DIR_PKG="/var/lib/pkgtools/packages"
+
+for ITEM in $@; do
+    find $DIR_PKG | rev | cut -d/ -f1 | rev | sort | grep -i --color "$ITEM"
+done
+
+unset GREP_COLORS
