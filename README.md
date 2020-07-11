@@ -2,7 +2,7 @@
 
 My collection of script, utility, template, tools, etc...
 
-## script
+## scripts
 
 Utility scripts
 
