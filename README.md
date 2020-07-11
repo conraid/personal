@@ -2,7 +2,7 @@
 
 My collection of script, utility, template, tools, etc...
 
-## scripts
+## slackware_scripts
 
 Utility scripts
 
