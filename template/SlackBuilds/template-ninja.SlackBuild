@@ -39,7 +39,7 @@ TMP=${TMP:-/tmp/pkg}
 PKG=$TMP/package-$PKGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
-DOCFILES="AUTHORS BUGS CHANGES COPYING* COPYRIGHT ChangeLog INSTALL LICENSE MANIFEST NEWS README* THANKS TODO VERSION"
+DOCFILES="AUTHORS BUGS CHANGES COPYING* COPYRIGHT ChangeLog HACKING INSTALL LICENSE MAINTAINERS MANIFEST NEWS README* THANKS TODO VERSION"
 
 if [ -z ${ARCH:=""} ]; then
   case "$( uname -m )" in
@@ -53,8 +53,22 @@ fi
 # the name of the created package would be, and then exit. This information
 # could be useful to other scripts.
 if [ ! -z "${PRINT_PACKAGE_NAME:-""}" ]; then
-  echo "$PKGNAM-$VERSION-$ARCH-$BUILD.txz"
+  echo "$PKGNAM-$VERSION-$ARCH-$BUILD.txz "
   exit 0
+fi
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC -pipe -fomit-frame-pointer"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
 fi
 
 rm -rf $PKG
@@ -67,13 +81,51 @@ cd $PRGNAM-$SRCVERSION
 chown -R root:root .
 chmod -R u+w,go+r-w,a+X-s .
 
-pear install -P $PKG $CWD/$PKGNAM-$VERSION.tgz
+# Apply patches
+if [ -e $CWD/patches ]; then
+  if [ -e $CWD/patches/series ]; then
+    for PATCH in $(cat $CWD/patches/series); do
+      patch -p1 -i $CWD/patches/$PATCH
+    done
+  else
+    for PATCH in $CWD/patches/*.patch; do
+      patch -p1 -i $PATCH
+    done
+  fi
+fi
 
-cd ${pkgdir}/usr/share/pear
-rm -r $(ls -A | grep '^\.')
+export CFLAGS="$SLKCFLAGS"
+export CXXFLAGS="$SLKCFLAGS"
+mkdir meson-build
+cd meson-build
+meson setup \
+  --prefix=/usr \
+  --libdir=/usr/lib$LIBDIRSUFFIX \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --infodir=/usr/info \
+  --docdir=/usr/doc/$PKGNAM-$VERSION \
+  --enable-static=no \
+  --enable-shared=yes \
+  --buildtype=release \
+  -Dintrospection=true \
+  -Ddocs=true \
+  ..
+
+ninja
+DESTDIR=$PKG ninja install
+cd ..
+
+# Don't ship .la files:
+rm -f $PKG/{,usr/}lib${LIBDIRSUFFIX}/*.la
 
 find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF | cut -f 1 -d : | xargs -r strip --strip-unneeded 2> /dev/null || true
 find $PKG | xargs file | grep "current ar archive" | cut -f 1 -d : | xargs -r strip -g 2> /dev/null || true
+
+if [ -d $PKG/usr/share/man ];
+  mv $PKG/usr/share/man $PKG/usr
+fi
 
 if [ -d $PKG/usr/man ]; then
   find $PKG/usr/man -type f -exec chmod 644 {} \; -exec gzip -9 {} \;
@@ -85,8 +137,8 @@ if [ -d $PKG/usr/info ]; then
   gzip -9 $PKG/usr/info/*.info*
 fi
 
-# Remove empty directories
-find $PKG -depth -type d -empty -delete
+# Remove perllocal.pod and other special files
+find $PKG -name perllocal.pod -o -name ".packlist" -o -name "*.bs" | xargs rm -f || true
 
 mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
 cp -a $DOCFILES $PKG/usr/doc/$PKGNAM-$VERSION || true
@@ -99,6 +151,12 @@ cat $CWD/slack-desc > $PKG/install/slack-desc
 if [ -e $CWD/doinst.sh ]; then
   cat $CWD/doinst.sh > $PKG/install/doinst.sh
 fi
+
+# Add a desktop file
+install -Dm744 $CWD/$PKGNAM.desktop $PKG/usr/share/applications/$PKGNAM.desktop
+
+# Add an icon
+install -Dm744 $CWD/$PKGNAM.png $PKG/usr/share/pixmaps/$PKGNAM.png
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PKGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
