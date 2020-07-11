@@ -12,5 +12,5 @@ Patches for Slackware
 
 ## template 
 
-SlackBuilds template
+SlackBuilds template for my repository [https://github.com/conraid/SlackBuilds]
 
