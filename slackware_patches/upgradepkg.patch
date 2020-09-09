@@ -1,0 +1,11 @@
+--- a/usr/share/bash-completion/completions/upgradepkg	2020-07-11 11:38:29.039455042 +0200
++++ b/usr/share/bash-completion/completions/upgradepkg
+@@ -7,7 +7,7 @@ _upgradepkg()
+ 
+     if [[ "$cur" == -* ]]; then
+         COMPREPLY=( $(compgen -W '--dry-run --install-new --reinstall
+-            --verbose' -- "$cur") )
++            --verbose --terse' -- "$cur") )
+         return
+     fi
+ 

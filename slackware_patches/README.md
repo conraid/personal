@@ -1,4 +1,8 @@
-## PATCHES
+# PATCHES
+
+## upgradepkg.patch
+
+Patch to add --terse option to upgradepkg completion
 
 Download and patched from root dir.
 

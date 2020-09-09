@@ -1,0 +1,9 @@
+#!/bin/bash
+
+#!/bin/sh
+
+export GREP_COLORS="ms=01;29"
+
+grep --color "^${1}:" /var/log/packages/${1}-*
+
+unset GREP_COLORS

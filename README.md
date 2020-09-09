@@ -2,7 +2,7 @@
 
 My collection of script, utility, template, tools, etc...
 
-## script
+## slackware_scripts
 
 Utility scripts
 
@@ -12,5 +12,5 @@ Patches for Slackware
 
 ## template 
 
-SlackBuilds template
+SlackBuilds template for my repository [https://github.com/conraid/SlackBuilds]
 
