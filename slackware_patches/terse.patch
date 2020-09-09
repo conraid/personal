@@ -1,0 +1,24 @@
+diff -Naupr a/usr/share/bash-completion/completions/installpkg b/usr/share/bash-completion/completions/installpkg
+--- a/usr/share/bash-completion/completions/installpkg	2020-07-25 19:39:19.000000000 +0200
++++ b/usr/share/bash-completion/completions/installpkg	2020-09-09 13:27:43.341729583 +0200
+@@ -22,7 +22,7 @@ _installpkg()
+ 
+     if [[ $cur == -* ]]; then
+         COMPREPLY=($(compgen -W '--warn --md5sum --root --infobox --terse
+-            --menu --ask --priority --tagfile' -- "$cur"))
++            --terselength --menu --ask --priority --tagfile' -- "$cur"))
+         return
+     fi
+ 
+diff -Naupr a/usr/share/bash-completion/completions/upgradepkg b/usr/share/bash-completion/completions/upgradepkg
+--- a/usr/share/bash-completion/completions/upgradepkg	2020-07-25 19:39:19.000000000 +0200
++++ b/usr/share/bash-completion/completions/upgradepkg	2020-09-09 13:27:51.759601660 +0200
+@@ -7,7 +7,7 @@ _upgradepkg()
+ 
+     if [[ $cur == -* ]]; then
+         COMPREPLY=($(compgen -W '--dry-run --install-new --reinstall
+-            --verbose' -- "$cur"))
++            --terse --terselength --verbose' -- "$cur"))
+         return
+     fi
+ 
