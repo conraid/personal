@@ -70,6 +70,8 @@ mkdir -p $TMP $PKG $OUTPUT
 #chown -R root:root .
 #chmod -R u+w,go+r-w,a+X-s .
 
+#mkdir -p $PKG/usr/lib$LIBDIRSUFFIX
+
 #DESTDIR=$PKG npm install --user root -g --no-bin-links $(npm pack | tail -1)
 DESTDIR=$PKG npm install --user root -g --prefix $PKG/usr $CWD/$PKGNAM-$VERSION.tgz
 
