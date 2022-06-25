@@ -71,6 +71,7 @@ else
   LIBDIRSUFFIX=""
 fi
 
+# BEGIN setup.py
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
@@ -86,7 +87,19 @@ find -L . \
   -exec chmod 644 {} \;
 
 CFLAGS="$SLKCFLAGS" python3 setup.py install --root=$PKG
-CFLAGS="$SLKCFLAGS" python3 -m pip install --root=$PKG $CWD/$PRGNAM-$SRCVERSION.tar.gz
+# END setup-py
+
+# BEGIN pip
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+
+CFLAGS="$SLKCFLAGS" python3 -m pip install --root=$PKG $CWD/$PKGNAM-$VERSION.tar.gz
+
+chown -R root:root $PKG
+
+# END pip
+
 
 find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF | cut -f 1 -d : | xargs -r strip --strip-unneeded 2> /dev/null || true
 find $PKG | xargs file | grep "current ar archive" | cut -f 1 -d : | xargs -r strip -g 2> /dev/null || true

@@ -90,7 +90,7 @@ find -L . \
   -exec chmod 644 {} \;
 
 # Apply patches
-if [ -e $CWD/patches ]; then
+if [ -e $CWD/patches/ ]; then
   if [ -e $CWD/patches/series ]; then
     for PATCH in $(cat $CWD/patches/series); do
       patch -p1 -i $CWD/patches/$PATCH

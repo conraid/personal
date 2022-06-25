@@ -86,7 +86,7 @@ find -L . \
   -exec chmod 644 {} \;
 
 # Apply patches
-if [ -e $CWD/patches ]; then
+if [ -e $CWD/patches/ ]; then
   if [ -e $CWD/patches/series ]; then
     for PATCH in $(cat $CWD/patches/series); do
       patch -p1 -i $CWD/patches/$PATCH
@@ -104,8 +104,7 @@ export CGO_CPPFLAGS="${SLKCFLAGS}"
 export CGO_CFLAGS="${SLKCFLAGS}"
 export CGO_CXXFLAGS="${SLKCFLAGS}"
 export GOFLAGS="-buildmode=pie -trimpath -ldflags=-linkmode=external -mod=readonly -modcacherw"
-
-
+export GOPATH="$(pwd)/build"
 
 mkdir build
 mv vendor build/src
