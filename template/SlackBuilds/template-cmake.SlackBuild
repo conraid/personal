@@ -139,7 +139,12 @@ cat $CWD/slack-desc > $PKG/install/slack-desc
 if [ -e $CWD/slack-required ]; then
   cat $CWD/slack-required > $PKG/install/slack-required
 fi
-cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+# Add a doinst.sh
+if [ -e $CWD/doinst.sh ]; then
+  cat $CWD/doinst.sh > $PKG/install/doinst.sh
+fi
+
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PKGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
