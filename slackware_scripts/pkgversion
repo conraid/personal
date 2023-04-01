@@ -1,0 +1,26 @@
+#!/bin/bash
+
+set -eu
+
+DIR=/var/lib/pkgtools/packages/
+
+PKG=$(ls $DIR | sed -e 's/,/ /g' | grep -i "${1}")
+
+for i in ${PKG}; do
+
+  NAME=$(echo ${DIR}/${i} | rev | cut -d/ -f1 | cut -d- -f4- | rev)
+
+  if [ $NAME == $1 ]; then
+    VERSION=$(echo ${DIR}/${i} | rev | cut -d/ -f1 | cut -d- -f3 | rev)
+    ARCH=$(echo ${DIR}/${i} | rev | cut -d/ -f1 | cut -d- -f2 | rev)
+    BUILD=$(echo ${DIR}/${i} | rev | cut -d/ -f1 | cut -d- -f1 | rev)
+
+    echo NAME: $NAME
+    echo VERSION: $VERSION
+    echo ARCH: $ARCH
+    echo BUILD: $BUILD
+
+  fi
+
+done
+

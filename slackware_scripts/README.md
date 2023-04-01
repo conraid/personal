@@ -33,4 +33,13 @@ Es:
  slackpkg: Slackpkg uses the pkgtools for install/upgrade/remove functions.
  slackpkg:
 
+## pkgversion 
+
+Show name, version, arch and build of a package.
+Es:
+ $ pkgversion mutt
+ NAME: mutt
+ VERSION: 2.2.10
+ ARCH: x86_64
+ BUILD: 1
 
