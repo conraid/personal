@@ -157,6 +157,9 @@ install -Dm744 $CWD/$PKGNAM.desktop $PKG/usr/share/applications/$PKGNAM.desktop
 
 # Add an icon
 install -Dm744 $CWD/$PKGNAM.png $PKG/usr/share/pixmaps/$PKGNAM.png
+for size in {16,22,24,32,36,48}; do
+  install -Dm644 desktop/$PRGNAM${size}.png $PKG/usr/share/icons/hicolor/${size}x${size}/apps/$PRGNAM.png
+done
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PKGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
