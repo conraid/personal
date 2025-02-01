@@ -4,29 +4,35 @@
 # with __config__ as the first entry,
 # by first making a backup of all.ini and then overwriting it.
 #
-# python-toml package is needed
+# python-tomlikit package is needed
 
-import toml
 import shutil
+import tomlkit
 
 file_name = 'all.ini'
 backup_name = f'{file_name}.bak'
 
+# Backup
 shutil.copy(file_name, backup_name)
-print(f"Backup created:: {backup_name}")
+print(f"Backup created: {backup_name}")
 
-with open(file_name, 'r') as file:
-    data = toml.load(file)
+# Load file all.ini
+with open(file_name, 'r', encoding='utf-8') as file:
+    doc = tomlkit.parse(file.read())
 
-sorted_sections = sorted(data)
-if "__config__" in sorted_sections:
-    sorted_sections.remove("__config__")
-    sorted_sections.insert(0, "__config__")
+# Sort sections
+sorted_keys = sorted(doc.keys())
+if "__config__" in sorted_keys:
+    sorted_keys.remove("__config__")
+    sorted_keys.insert(0, "__config__")
 
-sorted_data = {key: data[key] for key in sorted_sections}
+sorted_doc = tomlkit.document()
+for key in sorted_keys:
+    sorted_doc[key] = doc[key]
 
-with open(file_name, 'w') as file:
-    toml.dump(sorted_data, file)
+# Writes the file
+with open(file_name, 'w', encoding='utf-8') as file:
+    file.write(tomlkit.dumps(sorted_doc))
 
 print(f"Sorted and overwritten file: {file_name}")
 
