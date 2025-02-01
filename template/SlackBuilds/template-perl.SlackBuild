@@ -29,8 +29,8 @@ set -eu
 
 cd $(dirname $0) ; CWD=$(pwd)
 
-PRGNAM=%PRGNAM%
-PKGNAM=$(echo $PRGNAM | tr A-Z a-z)
+PRGNAM=
+PKGNAM=%PRGNAM%
 SRCVERSION=%VERSION%
 VERSION=$(echo $SRCVERSION | tr - _)
 BUILD=${BUILD:-1}
@@ -39,7 +39,7 @@ TMP=${TMP:-/tmp/pkg}
 PKG=$TMP/package-$PKGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
-DOCFILES="AUTHORS BUGS CHANGES COPYING* COPYRIGHT ChangeLog INSTALL LICENSE MANIFEST NEWS README* THANKS TODO VERSION"
+DOCFILES="Changes README* LICENSE"
 
 if [ -z ${ARCH:=""} ]; then
   case "$( uname -m )" in
@@ -72,7 +72,7 @@ rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
 cd $TMP
 rm -rf $PRGNAM-$SRCVERSION
-tar xvf $CWD/$PRGNAM-$SRCVERSION.tar.gz || tar xvf $CWD/v$SRCVERSION.tar.gz
+tar xvf $CWD/$PRGNAM-$SRCVERSION.tar.gz
 cd $PRGNAM-$SRCVERSION
 
 chown -R root:root .
@@ -103,11 +103,6 @@ if [ -d $PKG/usr/man ]; then
   for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
 fi
 
-if [ -d $PKG/usr/info ]; then
-  rm -f $PKG/usr/info/dir || true
-  gzip -9 $PKG/usr/info/*.info || true
-fi
-
 # Remove perllocal.pod and other special files
 find $PKG -name perllocal.pod -o -name ".packlist" -o -name "*.bs" | xargs rm -f || true
 
@@ -122,11 +117,6 @@ mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
 if [ -e $CWD/slack-required ]; then
   cat $CWD/slack-required | tee $PKG/install/slack-required $PKG/usr/doc/$PKGNAM-$VERSION/slack-required > /dev/null 2>&1
-fi
-
-# Add a doinst.sh
-if [ -e $CWD/doinst.sh ]; then
-  cat $CWD/doinst.sh > $PKG/install/doinst.sh
 fi
 
 cd $PKG
