@@ -30,7 +30,7 @@ set -euo pipefail
 cd $(dirname $0) ; CWD=$(pwd)
 
 PRGNAM=%PRGNAM%
-PKGNAM=$(echo $PRGNAM | tr A-Z a-z)
+PKGNAM=${PRGNAM,,}
 SRCVERSION=%VERSION%
 VERSION="${SRCVERSION//-/_}"
 BUILD=${BUILD:-1}
@@ -98,11 +98,30 @@ if [ -e $CWD/patches/ ]; then
   fi
 fi
 
-CARGO_HOME=.cargo \
-CFLAGS="$SLKCFLAGS" \
-CXXFLAGS="$SLKCFLAGS" \
-cargo build --release --target $CARGOTARGET
-cargo install --frozen --offline --no-track --root "$PKG/usr" --path="."
+mkdir -p ".cargo"
+export CARGO_HOME=".cargo"
+export CFLAGS="$SLKCFLAGS"
+export CXXFLAGS="$SLKCFLAGS"
+
+cargo fetch \
+    --locked
+    # --manifest-path path/to/Cargo.toml
+
+cargo build \
+    --release \
+    --frozen \
+    --offline
+    # --manifest-path path/to/Cargo.toml
+
+cargo install \
+    --frozen \
+    --offline \
+    --no-track \
+    --root "$PKG/usr" \
+    --path="."
+
+# Cleanup CARGO_HOME and possible unnecessary artifacts in $PKG.
+rm -rf "$CARGO_HOME" "$PKG/usr/.cargo" "$PKG/usr/.crates*"
 
 # Don't ship .la files:
 rm -f $PKG/{,usr/}lib${LIBDIRSUFFIX}/*.la
@@ -125,7 +144,6 @@ cat $CWD/slack-desc > $PKG/install/slack-desc
 if [ -e $CWD/doinst.sh ]; then
   cat $CWD/doinst.sh > $PKG/install/doinst.sh
 fi
-
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PKGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
