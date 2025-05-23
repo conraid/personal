@@ -84,6 +84,8 @@ find . \
 
 #CFLAGS="$SLKCFLAGS" python3 setup.py install --root=$PKG
 
+# genera solo wheel con pip, utile in caso di errore di build
+#pip wheel --no-deps --wheel-dir=dist .
 unshare -n python3 -m build --wheel --no-isolation
 python3 -m installer --destdir "$PKG" dist/*.whl
 
