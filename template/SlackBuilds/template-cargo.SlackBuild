@@ -102,15 +102,18 @@ mkdir -p ".cargo"
 export CARGO_HOME=".cargo"
 export CFLAGS="$SLKCFLAGS"
 export CXXFLAGS="$SLKCFLAGS"
+TARGET="$(rustc -vV | sed -n 's/host: //p')"
 
 cargo fetch \
-    --locked
+    --locked \
+    --target "$TARGET"
     # --manifest-path path/to/Cargo.toml
 
 cargo build \
     --release \
     --frozen \
-    --offline
+    --offline \
+    --target "$TARGET"
     # --manifest-path path/to/Cargo.toml
 
 cargo install \
@@ -118,7 +121,8 @@ cargo install \
     --offline \
     --no-track \
     --root "$PKG/usr" \
-    --path="."
+    --path="." \
+    --target "$TARGET"
 
 # Cleanup CARGO_HOME and possible unnecessary artifacts in $PKG.
 rm -rf "$CARGO_HOME" "$PKG/usr/.cargo" "$PKG/usr/.crates*"

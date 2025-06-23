@@ -95,8 +95,6 @@ if [ -e $CWD/patches/ ]; then
   fi
 fi
 
-export GOROOT="/usr/lib${LIBDIRSUFFIX}/go"
-export PATH="$GOROOT/bin:${PATH}"
 export CGO_CPPFLAGS="$SLKCFLAGS"
 export CGO_CFLAGS="$SLKCFLAGS"
 export CGO_CXXFLAGS="$SLKCFLAGS"
