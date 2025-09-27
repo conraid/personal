@@ -98,7 +98,7 @@ fi
 export CGO_CPPFLAGS="$SLKCFLAGS"
 export CGO_CFLAGS="$SLKCFLAGS"
 export CGO_CXXFLAGS="$SLKCFLAGS"
-export GOFLAGS="-buildmode=pie -trimpath -ldflags=-linkmode=external -mod=readonly -modcacherw"
+export GOFLAGS="-buildmode=pie -trimpath -mod=readonly -modcacherw -v -ldflags='-linkmode=external -s -w'"
 export GOPATH="$(pwd)/build"
 
 mkdir build
