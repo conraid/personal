@@ -95,6 +95,39 @@ if [ -e $CWD/patches/ ]; then
   fi
 fi
 
+# ============================================
+# PROMEMORIA: come decidere vendor vs -mod=mod
+# ============================================
+#
+# 1 Controlla se il progetto ha vendor
+# ls -l vendor
+# - se non esiste → userai -mod=mod + GOPROXY
+# - se esiste → passa al punto 2
+#
+# 2 Verifica se vendor è aggiornato rispetto a go.mod
+# go mod vendor -v -o /tmp/vendor_new
+# diff -r vendor /tmp/vendor_new
+# - se ci sono differenze → vendor obsoleto → userai -mod=mod + GOPROXY
+# - se nessuna differenza → vendor aggiornato → puoi usare -mod=vendor
+#
+# 3 Controlla quando è stato aggiornato vendor
+# git log -1 -- vendor/
+# - se molto vecchio → probabilmente non affidabile → usa -mod=mod
+# - se recente → vendor aggiornato
+#
+# 4 Leggi README o CONTRIBUTING
+# grep -i vendor README* CONTRIBUTING*
+# - se dice "use go mod vendor" → vendor supportato
+# - se dice "vendor deprecated" → usa -mod=mod
+#
+# 5 Regola pratica:
+# - vendor assente → -mod=mod + GOPROXY
+# - vendor presente e aggiornato → -mod=vendor
+# - vendor presente ma vecchio / non coerente → -mod=mod + GOPROXY
+#
+# Nota: GOPROXY consigliato = https://proxy.golang.org,direct
+
+
 export CGO_CPPFLAGS="$SLKCFLAGS"
 export CGO_CFLAGS="$SLKCFLAGS"
 export CGO_CXXFLAGS="$SLKCFLAGS"
@@ -111,6 +144,9 @@ mkdir -p build
 
 make
 make DESTDIR=$PKG install
+or
+mkdir -p "$PKG"/usr/bin
+go build -o "$PKG"/usr/bin/ ./...
 
 # Don't ship .la files:
 rm -f $PKG/{,usr/}lib${LIBDIRSUFFIX}/*.la
