@@ -113,6 +113,9 @@ if [ -d $PKG/usr/info ]; then
   gzip -9 $PKG/usr/info/*.info || true
 fi
 
+# Remove root node_modules
+rm -rf $PKG/usr/lib${LIBDIRSUFFIX}/node_modules/root
+
 # Remove empty directories
 find $PKG -depth -type d -empty -delete
 
