@@ -113,7 +113,9 @@ rm -rf $PKG/usr/lib${LIBDIRSUFFIX}/node_modules/root
 find $PKG -depth -type d -empty -delete
 
 mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
-cp -a $DOCFILES $PKG/usr/doc/$PKGNAM-$VERSION || true
+shopt -s nullglob
+cp -a $DOCFILES $PKG/usr/doc/$PKGNAM-$VERSION 2>/dev/null || true
+shopt -u nullglob
 cat $CWD/$PKGNAM.SlackBuild > $PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild
 
 mkdir -p $PKG/install
