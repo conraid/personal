@@ -8,6 +8,7 @@
 
 import shutil
 import tomlkit
+import re
 
 file_name = 'all.ini'
 backup_name = f'{file_name}.bak'
@@ -30,9 +31,16 @@ sorted_doc = tomlkit.document()
 for key in sorted_keys:
     sorted_doc[key] = doc[key]
 
-# Writes the file
+# Convert the document into a string
+content = tomlkit.dumps(sorted_doc)
+
+# Use a regex to replace 3 or more consecutive newlines with only 2.
+# This ensures a maximum of ONE empty line between sections.
+clean_content = re.sub(r'\n{3,}', '\n\n', content)
+
+# Write the cleaned file
 with open(file_name, 'w', encoding='utf-8') as file:
-    file.write(tomlkit.dumps(sorted_doc))
+    file.write(clean_content)
+# --------------------
 
-print(f"Sorted and overwritten file: {file_name}")
-
+print(f"Sorted and cleaned file: {file_name}")
