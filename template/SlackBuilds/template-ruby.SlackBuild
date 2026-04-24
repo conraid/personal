@@ -27,7 +27,8 @@
 
 set -euo pipefail
 
-cd $(dirname $0) ; CWD=$(pwd)
+cd $(dirname $0)
+CWD=$(pwd)
 
 PRGNAM=%PRGNAM%
 PKGNAM=${PRGNAM,,}
@@ -39,15 +40,14 @@ TMP=${TMP:-/tmp/pkg}
 PKG=$TMP/package-$PKGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
-
 # Insert document files in this variable
 DOCFILES="AUTHORS BUGS CHANGES COPYING* COPYRIGHT ChangeLog INSTALL LICENSE MANIFEST NEWS README* THANKS TODO VERSION"
 
 if [ -z ${ARCH:=""} ]; then
-  case "$( uname -m )" in
+  case "$(uname -m)" in
   i?86) ARCH=i686 ;;
   arm*) ARCH=arm ;;
-  *) ARCH=$( uname -m ) ;;
+  *) ARCH=$(uname -m) ;;
   esac
 fi
 
@@ -75,25 +75,40 @@ find . \
   \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
   -exec chmod 644 {} \;
 
-# Get the full path of the ruby installation, for gems
-DESTDIR="$(ruby -e'puts Gem.default_dir')"
+# Locate the .gemspec file inside the source directory
+GEMSPEC=$(ls *.gemspec | head -n 1)
 
-HOME="/tmp"  \
-GEM_HOME="$DESTDIR" GEM_PATH="$DESTDIR" \
-gem install \
-   --no-update-sources \
-   --backtrace \
-   --no-user-install \
-   --install-dir $PKG/$DESTDIR \
-   --bindir $PKG/usr/bin \
-   $CWD/$PKGNAM-$VERSION.gem
+if [ -z "$GEMSPEC" ]; then
+  echo "Error: No .gemspec file found in $(pwd)"
+  exit 1
+fi
 
-find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF | cut -f 1 -d : | xargs -r strip --strip-unneeded 2> /dev/null || true
-find $PKG | xargs file | grep "current ar archive" | cut -f 1 -d : | xargs -r strip -g 2> /dev/null || true
+gem build $GEMSPEC
+
+# Get the system's default Ruby gem directory
+DESTDIR="$(ruby -e 'puts Gem.default_dir')"
+
+HOME="/tmp" \
+  GEM_HOME="$DESTDIR" GEM_PATH="$DESTDIR" \
+  gem install \
+  --local \
+  --no-update-sources \
+  --backtrace \
+  --no-user-install \
+  --no-document \
+  --install-dir $PKG/$DESTDIR \
+  --bindir $PKG/usr/bin \
+  *.gem
+
+find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF | cut -f 1 -d : | xargs -r strip --strip-unneeded 2>/dev/null || true
+find $PKG | xargs file | grep "current ar archive" | cut -f 1 -d : | xargs -r strip -g 2>/dev/null || true
 
 if [ -d $PKG/usr/man ]; then
   find $PKG/usr/man -type f -exec chmod 644 {} \; -exec gzip -9 {} \;
-  for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+  for i in $(find $PKG/usr/man -type l); do
+    ln -s $(readlink $i).gz $i.gz
+    rm $i
+  done
 fi
 
 if [ -d $PKG/usr/info ]; then
@@ -105,14 +120,14 @@ mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
 shopt -s nullglob
 cp -a $DOCFILES $PKG/usr/doc/$PKGNAM-$VERSION 2>/dev/null || true
 shopt -u nullglob
-cat $CWD/$PKGNAM.SlackBuild > $PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild
+cat $CWD/$PKGNAM.SlackBuild >$PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild
 
 mkdir -p $PKG/install
-cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-desc >$PKG/install/slack-desc
 
 # Add a doinst.sh
 if [ -e $CWD/doinst.sh ]; then
-  cat $CWD/doinst.sh > $PKG/install/doinst.sh
+  cat $CWD/doinst.sh >$PKG/install/doinst.sh
 fi
 
 cd $PKG
