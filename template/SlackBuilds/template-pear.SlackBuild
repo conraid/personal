@@ -45,7 +45,7 @@ if [ -z ${ARCH:=""} ]; then
   case "$( uname -m )" in
     i?86) ARCH=i686 ;;
     arm*) ARCH=arm ;;
-       *) ARCH=$( uname -m ) ;;
+    *) ARCH=$( uname -m ) ;;
   esac
 fi
 
@@ -89,9 +89,6 @@ if [ -d $PKG/usr/info ]; then
   gzip -9 $PKG/usr/info/*.info || true
 fi
 
-# Remove root node_modules
-rm -rf $PKG/usr/lib${LIBDIRSUFFIX}/node_modules/root
-
 # Remove empty directories
 find $PKG -depth -type d -empty -delete
 
@@ -103,6 +100,9 @@ cat $CWD/$PKGNAM.SlackBuild > $PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
+if [ -e $CWD/slack-required ]; then
+  cat $CWD/slack-required > $PKG/install/slack-required
+fi
 
 # Add a doinst.sh
 if [ -e $CWD/doinst.sh ]; then

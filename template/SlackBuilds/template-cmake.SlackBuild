@@ -97,7 +97,6 @@ if compgen -G "$CWD/patches/*.patch" > /dev/null; then
   fi
 fi
 
-
 mkdir -p build
 cd build
 cmake -Wno-dev \
@@ -139,12 +138,14 @@ cat $CWD/$PKGNAM.SlackBuild > $PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
+if [ -e $CWD/slack-required ]; then
+  cat $CWD/slack-required > $PKG/install/slack-required
+fi
 
 # Add a doinst.sh
 if [ -e $CWD/doinst.sh ]; then
   cat $CWD/doinst.sh > $PKG/install/doinst.sh
 fi
-
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PKGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}

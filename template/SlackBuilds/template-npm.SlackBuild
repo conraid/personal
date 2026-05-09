@@ -57,7 +57,28 @@ if [ ! -z "${PRINT_PACKAGE_NAME:-""}" ]; then
   exit 0
 fi
 
-[ "$ARCH" = "x86_64" ] && LIBDIRSUFFIX="64" || LIBDIRSUFFIX=""
+case "$ARCH" in
+  x86_64)
+    NODE_PLAT="linux-x64"
+    LIBDIRSUFFIX="64"
+    ;;
+  i686)
+    NODE_PLAT="linux-ia32"
+    LIBDIRSUFFIX=""
+    ;;
+  arm*)
+    NODE_PLAT="linux-arm"
+    LIBDIRSUFFIX=""
+    ;;
+  aarch64)
+    NODE_PLAT="linux-arm64"
+    LIBDIRSUFFIX=""
+    ;;
+  *)
+    echo "$ARCH is not supported"
+    exit 1
+    ;;
+esac
 
 rm -rf $PKG
 mkdir -p $TMP $PKG $OUTPUT
@@ -91,9 +112,23 @@ find $PKG/usr \( -name '.git*' -o -name '.travis.yml' \) -exec rm -f {} \;
 # Remove occurrences of $PKG
 find $PKG -name "package.json" \
   -exec sed -e "s|$TMP/$PRGNAM-build||" \
-            -e "s|$TMP/$PRGNAM-$VERSION|/usr/lib${LIBDIRSUFFIX}/node_modules/${PRGNAM}|" \
-            -e "s|$CWD||g" \
-            -i '{}' \;
+        -e "s|$TMP/$PRGNAM-$VERSION|/usr/lib${LIBDIRSUFFIX}/node_modules/${PRGNAM}|" \
+        -e "s|$CWD||g" \
+        -i '{}' \;
+
+# Remove prebuilds not matching our platform
+if [ -d "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" ]; then
+  find "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" -type d -name "prebuilds" | while read -r PREPATH; do
+    for DIR in "$PREPATH"/*/; do
+      [ -d "$DIR" ] || continue
+      DIR_NAME=$(basename "$DIR")
+      if [ "$DIR_NAME" != "$NODE_PLAT" ]; then
+        echo "  Removing unused platform: $DIR_NAME"
+        rm -rf "$DIR"
+      fi
+    done
+  done
+fi
 
 mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
 shopt -s nullglob
@@ -103,6 +138,9 @@ cat $CWD/$PKGNAM.SlackBuild > $PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
+if [ -e $CWD/slack-required ]; then
+  cat $CWD/slack-required > $PKG/install/slack-required
+fi
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PKGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}

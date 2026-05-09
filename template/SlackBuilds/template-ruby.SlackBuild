@@ -27,11 +27,10 @@
 
 set -euo pipefail
 
-cd $(dirname $0)
-CWD=$(pwd)
+cd $(dirname $0) ; CWD=$(pwd)
 
 PRGNAM=%PRGNAM%
-PKGNAM=${PRGNAM,,}
+PKGNAM=ruby-${PRGNAM,,}
 SRCVERSION=%VERSION%
 VERSION="${SRCVERSION//-/_}"
 BUILD=${BUILD:-1}
@@ -45,9 +44,9 @@ DOCFILES="AUTHORS BUGS CHANGES COPYING* COPYRIGHT ChangeLog INSTALL LICENSE MANI
 
 if [ -z ${ARCH:=""} ]; then
   case "$(uname -m)" in
-  i?86) ARCH=i686 ;;
-  arm*) ARCH=arm ;;
-  *) ARCH=$(uname -m) ;;
+    i?86) ARCH=i686 ;;
+    arm*) ARCH=arm ;;
+    *) ARCH=$(uname -m) ;;
   esac
 fi
 
@@ -98,7 +97,7 @@ HOME="/tmp" \
   --no-document \
   --install-dir $PKG/$DESTDIR \
   --bindir $PKG/usr/bin \
-  *.gem
+  $PRGNAM-$SRCVERSION.gem
 
 find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF | cut -f 1 -d : | xargs -r strip --strip-unneeded 2>/dev/null || true
 find $PKG | xargs file | grep "current ar archive" | cut -f 1 -d : | xargs -r strip -g 2>/dev/null || true
