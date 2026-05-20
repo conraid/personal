@@ -96,33 +96,6 @@ if compgen -G "$CWD/patches/*.patch" > /dev/null; then
   fi
 fi
 
-# Configure, build, and install:
-if [ ! -r configure ]; then
-  if [ -x ./autogen.sh ]; then
-    NOCONFIGURE=1 ./autogen.sh
-  else
-    autoreconf -vif
-  fi
-fi
-LDFLAGS="-L/usr/lib${LIBDIRSUFFIX}" \
-  CFLAGS="$SLKCFLAGS" \
-  CXXFLAGS="$SLKCFLAGS" \
-  ./configure \
-  --prefix=/usr \
-  --libdir=/usr/lib${LIBDIRSUFFIX} \
-  --sysconfdir=/etc \
-  --localstatedir=/var \
-  --runstatedir=/run \
-  --mandir=/usr/man \
-  --infodir=/usr/info \
-  --docdir=/usr/doc/$PKGNAM-$VERSION \
-  --enable-static=no \
-  --enable-shared=yes \
-  --host=$ARCH-slackware-linux \
-  --build=$ARCH-slackware-linux
-
-make
-make DESTDIR=$PKG install
 
 # Don't ship .la files:
 rm -f $PKG/{,usr/}lib${LIBDIRSUFFIX}/*.la
@@ -133,11 +106,6 @@ find $PKG -print0 | xargs file | grep "current ar archive" | cut -f 1 -d : | xar
 if [ -d $PKG/usr/man ]; then
   find $PKG/usr/man -type f -exec chmod 644 {} \; -exec gzip -9 {} \;
   for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
-fi
-
-if [ -d $PKG/usr/info ]; then
-  rm -f $PKG/usr/info/dir || true
-  gzip -9 $PKG/usr/info/*.info || true
 fi
 
 mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
@@ -156,15 +124,6 @@ fi
 if [ -e $CWD/doinst.sh ]; then
   cat $CWD/doinst.sh > $PKG/install/doinst.sh
 fi
-
-# Add a desktop file
-install -Dm744 $CWD/$PKGNAM.desktop $PKG/usr/share/applications/$PKGNAM.desktop
-
-# Add an icon
-install -Dm744 $CWD/$PKGNAM.png $PKG/usr/share/pixmaps/$PKGNAM.png
-for size in {16,22,24,32,36,48}; do
-  install -Dm644 desktop/$PRGNAM${size}.png $PKG/usr/share/icons/hicolor/${size}x${size}/apps/$PRGNAM.png
-done
 
 cd $PKG
 /sbin/makepkg -l y -c n $OUTPUT/$PKGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}

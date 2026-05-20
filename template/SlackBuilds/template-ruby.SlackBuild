@@ -40,7 +40,7 @@ PKG=$TMP/package-$PKGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
 # Insert document files in this variable
-DOCFILES="AUTHORS BUGS CHANGES COPYING* COPYRIGHT ChangeLog INSTALL LICENSE MANIFEST NEWS README* THANKS TODO VERSION"
+DOCFILES="[A-Z][A-Z]* *.md ChangeLog"
 
 if [ -z ${ARCH:=""} ]; then
   case "$(uname -m)" in
