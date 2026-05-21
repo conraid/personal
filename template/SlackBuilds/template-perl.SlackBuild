@@ -82,15 +82,27 @@ find . \
   \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
   -exec chmod 644 {} \;
 
-PERL_MM_USE_DEFAULT=1 \
-  perl Makefile.PL \
-  PREFIX=/usr \
-  INSTALLDIRS=vendor \
-  INSTALLVENDORMAN1DIR=/usr/man/man1 \
-  INSTALLVENDORMAN3DIR=/usr/man/man3
 
-make
-make install DESTDIR=$PKG
+if [ -f Build.PL ]; then
+  perl Build.PL \
+    --prefix /usr \
+    --installdirs vendor \
+    --install_path libdoc=/usr/man/man3 \
+    --install_path bindoc=/usr/man/man1
+
+  perl Build
+  perl Build install --destdir "$PKG"
+else
+  PERL_MM_USE_DEFAULT=1 \
+    perl Makefile.PL \
+    PREFIX=/usr \
+    INSTALLDIRS=vendor \
+    INSTALLVENDORMAN1DIR=/usr/man/man1 \
+    INSTALLVENDORMAN3DIR=/usr/man/man3
+
+  make
+  make install DESTDIR="$PKG"
+fi
 
 # Don't ship .la files:
 rm -f $PKG/{,usr/}lib${LIBDIRSUFFIX}/*.la
