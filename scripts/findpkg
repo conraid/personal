@@ -1,0 +1,87 @@
+#!/bin/bash
+# findpkg - Search for Slackware packages by name
+# Usage: findpkg <package_name>
+# This script searches for Slackware packages in the /var/lib/pkgtools/packages directory
+# and displays packages with exact and similar names.
+#
+# Author: Corrado Franco <https://corradofranco.it>
+#
+# License: GPL-3.0
+#
+# This script is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# This script is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with this script.  If not, see <http://www.gnu.org/licenses/>.
+# This script is intended for use on Slackware systems and requires the pkgtools package.
+# It is designed to be run in a terminal.
+# It searches for packages in the /var/lib/pkgtools/packages directory
+# and displays results in a user-friendly format.
+# It highlights package names in red and uses blue for section headers.
+# It supports searching for exact package names and similar names.
+# It uses grep with color highlighting for better visibility.
+# It requires the find command to locate packages in the specified directory.
+#
+
+## Usage example:
+# ./findpkg bash
+# This will search for packages with the name "bash" in the /var/lib/pkgtools/packages directory
+# and display both exact matches and similar names.
+
+set -euo pipefail
+
+# Configuration: Directories for installed packages and local repository
+export GREP_COLORS="ms=01;31"
+DIR_PKG="/var/lib/pkgtools/packages"
+
+ITEM="${1:-}"
+
+# Check if the package name argument is provided
+if [ -z "$ITEM" ]; then
+  echo "Usage: $0 <package_name>"
+  echo "Searches for Slackware packages matching the given name"
+  exit 1
+fi
+
+# Define ANSI color codes for output formatting
+NOCOLOR='\033[0m'
+RED='\033[1;31m'
+BLUE='\033[0;34m'
+
+# Search for INSTALLED packages (Exact Name Match)
+# Uses awk to split the Slackware package naming convention (name-version-arch-build)
+echo -e "\n${BLUE}INSTALLED packages with name matching $ITEM:${NOCOLOR}"
+found_exact=0
+if [ -d "$DIR_PKG" ]; then
+  while read -r pkg; do
+    # Extract the name part (all fields except the last three)
+    name=$(echo "$pkg" | awk -F'-' '{for(i=1;i<=NF-3;i++) {if(i>1) printf "-"; printf "%s", $i}}')
+    # Extract version, arch, and build
+    rest=$(echo "$pkg" | awk -F'-' '{for(i=NF-2;i<=NF;i++) {if(i>NF-2) printf "-"; printf "%s", $i}}')
+    echo -e "  ${RED}${name}${NOCOLOR}-${rest}"
+    found_exact=1
+  done < <(find "$DIR_PKG" -maxdepth 1 -type f -printf "%f\n" | grep -E -i "^${ITEM}-[^-]*-[^-]*-[^-]*$" 2> /dev/null || true)
+fi
+[ $found_exact -eq 0 ] && echo "  no exact matches found"
+
+# Search for INSTALLED packages (Similar Names)
+echo -e "\n${BLUE}INSTALLED packages with name similar to $ITEM:${NOCOLOR}"
+found_similar=0
+if [ -d "$DIR_PKG" ]; then
+  while read -r pkg; do
+    echo "  $pkg" | grep -i --color=always "$ITEM"
+    found_similar=1
+  done < <(find "$DIR_PKG" -maxdepth 1 -type f -printf "%f\n" | sort | grep -i "$ITEM" 2> /dev/null || true)
+fi
+[ $found_similar -eq 0 ] && echo "  no similar matches found"
+
+# Blank space for visual separation
+echo ""
+
+# Clean up environment
+unset GREP_COLORS

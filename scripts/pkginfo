@@ -1,0 +1,9 @@
+#!/bin/bash
+
+file=$(find /var/lib/pkgtools/packages -type f -name "${1}-*-*-*" 2>/dev/null | grep "/var/lib/pkgtools/packages/${1}-" | sort | head -n 1)
+
+if grep --color "^${1}:" "$file" >/dev/null 2>&1; then
+    grep --color "^${1}:" "$file"
+else
+    echo "This package is not installed"
+fi

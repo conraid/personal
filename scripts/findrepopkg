@@ -1,0 +1,71 @@
+#!/bin/bash
+# findpkg - Search for Slackware packages by name
+# Usage: findpkg <package_name>
+# This script searches for Slackware packages in the /var/lib/pkgtools/packages directory
+# and displays packages with exact and similar names.
+#
+# Author: Corrado Franco <https://corradofranco.it>
+#
+# License: GPL-3.0
+#
+# This script is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+# This script is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# You should have received a copy of the GNU General Public License
+# along with this script.  If not, see <http://www.gnu.org/licenses/>.
+# This script is intended for use on Slackware systems and requires the pkgtools package.
+# It is designed to be run in a terminal.
+# It searches for packages in the /var/lib/pkgtools/packages directory
+# and displays results in a user-friendly format.
+# It highlights package names in red and uses blue for section headers.
+# It supports searching for exact package names and similar names.
+# It uses grep with color highlighting for better visibility.
+# It requires the find command to locate packages in the specified directory.
+#
+
+## Usage example:
+# ./findrepopkg bash
+# This will search for packages with the name "bash" in the /opt/slackers/repository directory
+# and display both exact matches and similar names.
+
+set -eu -o pipefail
+
+export GREP_COLORS="ms=01;31"
+REPO_DIR="/opt/slackers/repository"
+
+ITEM="${1:-}"
+
+# Check if argument is provided
+if [ -z "$ITEM" ]; then
+  echo "Usage: $0 <package_name>"
+  echo "Searches for Slackware packages matching the given name"
+  exit 1
+fi
+
+# Define colors
+BLUE='\033[0;94m'
+NOCOLOR='\033[0m'
+
+echo ""
+findpkg "$ITEM"
+
+# Ricerca nel Repository (Solo .txz)
+echo ""
+echo -e "${BLUE}Pacchetti nel REPOSITORY (.txz) con nome simile a $ITEM:${NOCOLOR}"
+found_repo=0
+if [ -d "$REPO_DIR" ]; then
+  while read -r pkg; do
+    echo "  $pkg" | grep -i --color=always "$ITEM"
+    found_repo=1
+  done < <(find "$REPO_DIR" -type f -name "*.txz" -printf "%f\n" | sort | grep -i "$ITEM" 2> /dev/null || true)
+fi
+[ $found_repo -eq 0 ] && echo "  nessun pacchetto trovato nel repository"
+
+echo ""
+
+unset GREP_COLORS
