@@ -43,9 +43,9 @@ DOCFILES="[A-Z][A-Z]* *.md ChangeLog"
 
 if [ -z ${ARCH:=""} ]; then
   case "$( uname -m )" in
-  i?86) ARCH=i686 ;;
-  arm*) ARCH=arm ;;
-  *) ARCH=$( uname -m ) ;;
+    i?86) ARCH=i686 ;;
+    arm*) ARCH=arm ;;
+    *) ARCH=$( uname -m ) ;;
   esac
 fi
 
@@ -112,9 +112,9 @@ find $PKG/usr \( -name '.git*' -o -name '.travis.yml' \) -exec rm -f {} \;
 # Remove occurrences of $PKG
 find $PKG -name "package.json" \
   -exec sed -e "s|$TMP/$PRGNAM-build||" \
-        -e "s|$TMP/$PRGNAM-$VERSION|/usr/lib${LIBDIRSUFFIX}/node_modules/${PRGNAM}|" \
-        -e "s|$CWD||g" \
-        -i '{}' \;
+  -e "s|$TMP/$PRGNAM-$VERSION|/usr/lib${LIBDIRSUFFIX}/node_modules/${PRGNAM}|" \
+  -e "s|$CWD||g" \
+  -i '{}' \;
 
 # Remove prebuilds not matching our platform
 if [ -d "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" ]; then
@@ -130,11 +130,20 @@ if [ -d "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" ]; then
   done
 fi
 
+# Find all ELF binaries and remove insecure references to /tmp
+find "$PKG" -type f | while read -r file; do
+  if file "$file" | grep -E -q "ELF.*(executable|shared object)"; then
+    if patchelf --print-rpath "$file" 2>/dev/null | grep -q "/tmp"; then
+      patchelf --remove-rpath "$file"
+    fi
+  fi
+done
+
 mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
 shopt -s nullglob
 #cp -a $DOCFILES $PKG/usr/doc/$PKGNAM-$VERSION 2>/dev/null || true
 shopt -u nullglob
-cat $CWD/$PKGNAM.SlackBuild > $PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild
+cat $CWD/$PKGNAM.SlackBuild > $PKG/usr/doc/$PKGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
