@@ -98,7 +98,7 @@ mkdir -p $TMP $PKG $OUTPUT
 mkdir -p $PKG/usr/lib${LIBDIRSUFFIX}
 
 #DESTDIR=$PKG npm install --user root --location=global --no-bin-links $(npm pack | tail -1)
-DESTDIR=$PKG npm install --user root --location=global --prefix $PKG/usr $CWD/$PKGNAM-$VERSION.tgz
+DESTDIR=$PKG npm install --user root --location=global --prefix $PKG/usr $CWD/$PRGNAM-$VERSION.tgz
 
 # Remove root node_modules
 rm -rf $PKG/usr/lib${LIBDIRSUFFIX}/node_modules/root
