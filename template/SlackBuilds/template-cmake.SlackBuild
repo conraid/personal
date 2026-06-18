@@ -45,7 +45,7 @@ if [ -z ${ARCH:=""} ]; then
   case "$( uname -m )" in
     i?86) ARCH=i686 ;;
     arm*) ARCH=arm ;;
-       *) ARCH=$( uname -m ) ;;
+    *) ARCH=$( uname -m ) ;;
   esac
 fi
 
@@ -113,6 +113,12 @@ cmake -Wno-dev \
   -DLOCALSTATEDIR=/var \
   -DHTML_INSTALL_DIR=/usr/doc/HTML \
   -DLIB_SUFFIX=${LIBDIRSUFFIX} \
+  -DDOCBUNDLEDIR=/usr/doc/HTML \
+  -DKDE_INSTALL_MANDIR=/usr/man \
+  -DKDE_INSTALL_DOCBUNDLEDIR=/usr/doc/HTML \
+  -DKDE_INSTALL_LIBDIR=/usr/lib${LIBDIRSUFFIX} \
+  -DKDE_INSTALL_PLUGINDIR=/usr/lib${LIBDIRSUFFIX}/qt/plugins \
+  -DKDE_INSTALL_INFODIR=/usr/info \
   ..
 
 make
