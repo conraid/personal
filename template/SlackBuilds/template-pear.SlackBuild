@@ -20,7 +20,7 @@
 # See the GNU General Public License for more details.
 
 # You may have received a copy of the GNU General Public License along
-# with this program (most likely, a file named COPYING).  If not, see
+# with this program (most likely, a file named COPYING). If not, see
 # <http://www.gnu.org/licenses/>.
 #
 # Latest version of this SlackBuild at https://codeberg.org/conraid/SlackBuilds
@@ -42,19 +42,19 @@ OUTPUT=${OUTPUT:-/tmp}
 DOCFILES="[A-Z][A-Z]* *.md ChangeLog"
 
 if [ -z ${ARCH:=""} ]; then
-  case "$( uname -m )" in
-    i?86) ARCH=i686 ;;
-    arm*) ARCH=arm ;;
-    *) ARCH=$( uname -m ) ;;
-  esac
+ case "$( uname -m )" in
+ i?86) ARCH=i686 ;;
+ arm*) ARCH=arm ;;
+ *) ARCH=$( uname -m ) ;;
+ esac
 fi
 
 # If the variable PRINT_PACKAGE_NAME is set, then this script will report what
 # the name of the created package would be, and then exit. This information
 # could be useful to other scripts.
 if [ ! -z "${PRINT_PACKAGE_NAME:-""}" ]; then
-  echo "$PKGNAM-$VERSION-$ARCH-$BUILD.txz"
-  exit 0
+ echo "$PKGNAM-$VERSION-$ARCH-$BUILD.txz"
+ exit 0
 fi
 
 rm -rf $PKG
@@ -66,31 +66,31 @@ cd $PRGNAM-$SRCVERSION
 
 chown -R root:root .
 find . \
-  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
-  -exec chmod 755 {} \; -o \
-  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
-  -exec chmod 644 {} \;
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
 
 pear install -P $PKG $CWD/$PKGNAM-$VERSION.tgz
 
 cd ${pkgdir}/usr/share/pear
 rm -r $(ls -A | grep '^\.')
 
-find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF | cut -f 1 -d : | xargs -r strip --strip-unneeded 2> /dev/null || true
-find $PKG | xargs file | grep "current ar archive" | cut -f 1 -d : | xargs -r strip -g 2> /dev/null || true
+find $PKG -type f -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF | cut -f 1 -d : | xargs -r -d "\n" strip --strip-unneeded 2> /dev/null || true
+find $PKG -type f -print0 | xargs -0 file | grep "current ar archive" | cut -f 1 -d : | xargs -r -d "\n" strip -g 2> /dev/null || true
 
 if [ -d $PKG/usr/man ]; then
-  find $PKG/usr/man -type f -exec chmod 644 {} \; -exec gzip -9 {} \;
-  for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+ find $PKG/usr/man -type f -exec chmod 644 {} \; -exec gzip -9 {} \;
+ for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
 fi
 
 if [ -d $PKG/usr/info ]; then
-  rm -f $PKG/usr/info/dir || true
-  gzip -9 $PKG/usr/info/*.info || true
+ rm -f $PKG/usr/info/dir || true
+ gzip -9 $PKG/usr/info/*.info || true
 fi
 
 # Remove empty directories
-find $PKG -depth -type d -empty -delete
+find $PKG -type f -print0 -depth -type d -empty -delete
 
 mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
 shopt -s nullglob
@@ -101,12 +101,12 @@ cat $CWD/$PKGNAM.SlackBuild > $PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
 if [ -e $CWD/slack-required ]; then
-  cat $CWD/slack-required > $PKG/install/slack-required
+ cat $CWD/slack-required > $PKG/install/slack-required
 fi
 
 # Add a doinst.sh
 if [ -e $CWD/doinst.sh ]; then
-  cat $CWD/doinst.sh > $PKG/install/doinst.sh
+ cat $CWD/doinst.sh > $PKG/install/doinst.sh
 fi
 
 cd $PKG

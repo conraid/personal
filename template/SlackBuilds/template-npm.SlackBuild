@@ -20,7 +20,7 @@
 # See the GNU General Public License for more details.
 
 # You may have received a copy of the GNU General Public License along
-# with this program (most likely, a file named COPYING).  If not, see
+# with this program (most likely, a file named COPYING). If not, see
 # <http://www.gnu.org/licenses/>.
 #
 # Latest version of this SlackBuild at https://codeberg.org/conraid/SlackBuilds
@@ -42,42 +42,42 @@ OUTPUT=${OUTPUT:-/tmp}
 DOCFILES="[A-Z][A-Z]* *.md ChangeLog"
 
 if [ -z ${ARCH:=""} ]; then
-  case "$( uname -m )" in
-    i?86) ARCH=i686 ;;
-    arm*) ARCH=arm ;;
-    *) ARCH=$( uname -m ) ;;
-  esac
+ case "$( uname -m )" in
+ i?86) ARCH=i686 ;;
+ arm*) ARCH=arm ;;
+ *) ARCH=$( uname -m ) ;;
+ esac
 fi
 
 # If the variable PRINT_PACKAGE_NAME is set, then this script will report what
 # the name of the created package would be, and then exit. This information
 # could be useful to other scripts.
 if [ ! -z "${PRINT_PACKAGE_NAME:-""}" ]; then
-  echo "$PKGNAM-$VERSION-$ARCH-$BUILD.txz"
-  exit 0
+ echo "$PKGNAM-$VERSION-$ARCH-$BUILD.txz"
+ exit 0
 fi
 
 case "$ARCH" in
-  x86_64)
-    NODE_PLAT="linux-x64"
-    LIBDIRSUFFIX="64"
-    ;;
-  i686)
-    NODE_PLAT="linux-ia32"
-    LIBDIRSUFFIX=""
-    ;;
-  arm*)
-    NODE_PLAT="linux-arm"
-    LIBDIRSUFFIX=""
-    ;;
-  aarch64)
-    NODE_PLAT="linux-arm64"
-    LIBDIRSUFFIX=""
-    ;;
-  *)
-    echo "$ARCH is not supported"
-    exit 1
-    ;;
+ x86_64)
+ NODE_PLAT="linux-x64"
+ LIBDIRSUFFIX="64"
+ ;;
+ i686)
+ NODE_PLAT="linux-ia32"
+ LIBDIRSUFFIX=""
+ ;;
+ arm*)
+ NODE_PLAT="linux-arm"
+ LIBDIRSUFFIX=""
+ ;;
+ aarch64)
+ NODE_PLAT="linux-arm64"
+ LIBDIRSUFFIX=""
+ ;;
+ *)
+ echo "$ARCH is not supported"
+ exit 1
+ ;;
 esac
 
 rm -rf $PKG
@@ -90,10 +90,10 @@ mkdir -p $TMP $PKG $OUTPUT
 #
 #chown -R root:root .
 #find . \
-  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
-  -exec chmod 755 {} \; -o \
-  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
-  -exec chmod 644 {} \;
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
 
 mkdir -p $PKG/usr/lib${LIBDIRSUFFIX}
 
@@ -110,33 +110,33 @@ rmdir $PKG/usr/etc || true
 find $PKG/usr \( -name '.git*' -o -name '.travis.yml' \) -exec rm -f {} \;
 
 # Remove occurrences of $PKG
-find $PKG -name "package.json" \
-  -exec sed -e "s|$TMP/$PRGNAM-build||" \
-  -e "s|$TMP/$PRGNAM-$VERSION|/usr/lib${LIBDIRSUFFIX}/node_modules/${PRGNAM}|" \
-  -e "s|$CWD||g" \
-  -i '{}' \;
+find $PKG -type f -print0 -name "package.json" \
+ -exec sed -e "s|$TMP/$PRGNAM-build||" \
+ -e "s|$TMP/$PRGNAM-$VERSION|/usr/lib${LIBDIRSUFFIX}/node_modules/${PRGNAM}|" \
+ -e "s|$CWD||g" \
+ -i '{}' \;
 
 # Remove prebuilds not matching our platform
 if [ -d "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" ]; then
-  find "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" -type d -name "prebuilds" | while read -r PREPATH; do
-    for DIR in "$PREPATH"/*/; do
-      [ -d "$DIR" ] || continue
-      DIR_NAME=$(basename "$DIR")
-      if [ "$DIR_NAME" != "$NODE_PLAT" ]; then
-        echo "  Removing unused platform: $DIR_NAME"
-        rm -rf "$DIR"
-      fi
-    done
-  done
+ find "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" -type d -name "prebuilds" | while read -r PREPATH; do
+ for DIR in "$PREPATH"/*/; do
+   [ -d "$DIR" ] || continue
+   DIR_NAME=$(basename "$DIR")
+   if [ "$DIR_NAME" != "$NODE_PLAT" ]; then
+     echo "  Removing unused platform: $DIR_NAME"
+     rm -rf "$DIR"
+   fi
+ done
+ done
 fi
 
 # Find all ELF binaries and remove insecure references to /tmp
 find "$PKG" -type f | while read -r file; do
-  if file "$file" | grep -E -q "ELF.*(executable|shared object)"; then
-    if patchelf --print-rpath "$file" 2>/dev/null | grep -q "/tmp"; then
-      patchelf --remove-rpath "$file"
-    fi
-  fi
+ if file "$file" | grep -E -q "ELF.*(executable|shared object)"; then
+ if patchelf --print-rpath "$file" 2>/dev/null | grep -q "/tmp"; then
+   patchelf --remove-rpath "$file"
+ fi
+ fi
 done
 
 mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
@@ -148,7 +148,7 @@ cat $CWD/$PKGNAM.SlackBuild > $PKG/usr/doc/$PKGNAM-$VERSION/$PRGNAM.SlackBuild
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
 if [ -e $CWD/slack-required ]; then
-  cat $CWD/slack-required > $PKG/install/slack-required
+ cat $CWD/slack-required > $PKG/install/slack-required
 fi
 
 cd $PKG

@@ -62,6 +62,16 @@ if [ -x /usr/bin/kbuildsycoca4 ]; then
   /usr/bin/kbuildsycoca4
 fi
 
+if [ -x /usr/bin/install-info -a -d usr/info ]; then
+  (
+    cd usr/info
+    rm -f dir
+    for file in *.info*; do
+      /usr/bin/install-info "$file" dir 2> /dev/null
+    done
+  )
+fi
+
 # Before perm, if necessary (config is not necessary)
 perms etc/rc.d/rc.XXX.new
 # After config. If PERMS not necessary
