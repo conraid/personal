@@ -43,19 +43,19 @@ OUTPUT=${OUTPUT:-/tmp}
 DOCFILES="[A-Z][A-Z]* *.md ChangeLog"
 
 if [ -z ${ARCH:=""} ]; then
- case "$(uname -m)" in
-  i?86) ARCH=i686 ;;
-  arm*) ARCH=arm ;;
-  *) ARCH=$(uname -m) ;;
- esac
+  case "$(uname -m)" in
+    i?86) ARCH=i686 ;;
+    arm*) ARCH=arm ;;
+    *) ARCH=$(uname -m) ;;
+  esac
 fi
 
 # If the variable PRINT_PACKAGE_NAME is set, then this script will report what
 # the name of the created package would be, and then exit. This information
 # could be useful to other scripts.
 if [ ! -z "${PRINT_PACKAGE_NAME:-""}" ]; then
- echo "$PKGNAM-$VERSION-$ARCH-$BUILD.txz"
- exit 0
+  echo "$PKGNAM-$VERSION-$ARCH-$BUILD.txz"
+  exit 0
 fi
 
 [ "$ARCH" = "x86_64" ] && LIBDIRSUFFIX="64" || LIBDIRSUFFIX=""
@@ -69,17 +69,17 @@ cd $PRGNAM-$SRCVERSION
 
 chown -R root:root .
 find . \
- \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
- -exec chmod 755 {} \; -o \
- \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
- -exec chmod 644 {} \;
+  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+  -exec chmod 755 {} \; -o \
+  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+  -exec chmod 644 {} \;
 
 # Locate the .gemspec file inside the source directory
 GEMSPEC=$(ls *.gemspec | head -n 1)
 
 if [ -z "$GEMSPEC" ]; then
- echo "Error: No .gemspec file found in $(pwd)"
- exit 1
+  echo "Error: No .gemspec file found in $(pwd)"
+  exit 1
 fi
 
 gem build $GEMSPEC
@@ -88,31 +88,31 @@ gem build $GEMSPEC
 DESTDIR="$(ruby -e 'puts Gem.default_dir')"
 
 HOME="/tmp" \
- GEM_HOME="$DESTDIR" GEM_PATH="$DESTDIR" \
- gem install \
- --local \
- --no-update-sources \
- --backtrace \
- --no-user-install \
- --no-document \
- --install-dir $PKG/$DESTDIR \
- --bindir $PKG/usr/bin \
- $PRGNAM-$SRCVERSION.gem
+  GEM_HOME="$DESTDIR" GEM_PATH="$DESTDIR" \
+  gem install \
+  --local \
+  --no-update-sources \
+  --backtrace \
+  --no-user-install \
+  --no-document \
+  --install-dir $PKG/$DESTDIR \
+  --bindir $PKG/usr/bin \
+  $PRGNAM-$SRCVERSION.gem
 
 find $PKG -type f -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF | cut -f 1 -d : | xargs -r -d "\n" strip --strip-unneeded 2>/dev/null || true
 find $PKG -type f -print0 | xargs -0 file | grep "current ar archive" | cut -f 1 -d : | xargs -r -d "\n" strip -g 2>/dev/null || true
 
 if [ -d $PKG/usr/man ]; then
- find $PKG/usr/man -type f -exec chmod 644 {} \; -exec gzip -9 {} \;
- for i in $(find $PKG/usr/man -type l); do
-  ln -s $(readlink $i).gz $i.gz
-  rm $i
- done
+  find $PKG/usr/man -type f -exec chmod 644 {} \; -exec gzip -9 {} \;
+  for i in $(find $PKG/usr/man -type l); do
+    ln -s $(readlink $i).gz $i.gz
+    rm $i
+  done
 fi
 
 if [ -d $PKG/usr/info ]; then
- rm -f $PKG/usr/info/dir || true
- gzip -9 $PKG/usr/info/*.info || true
+  rm -f $PKG/usr/info/dir || true
+  gzip -9 $PKG/usr/info/*.info || true
 fi
 
 mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
@@ -126,7 +126,7 @@ cat $CWD/slack-desc >$PKG/install/slack-desc
 
 # Add a doinst.sh
 if [ -e $CWD/doinst.sh ]; then
- cat $CWD/doinst.sh >$PKG/install/doinst.sh
+  cat $CWD/doinst.sh >$PKG/install/doinst.sh
 fi
 
 cd $PKG
