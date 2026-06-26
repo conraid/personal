@@ -151,7 +151,7 @@ if [ -e $CWD/doinst.sh ]; then
 fi
 
 # Add a desktop file
-install -Dm644 $CWD/$PKGNAM.desktop $PKG/usr/share/applications/$PKGNAM.desktop
+install -Dm755 $CWD/$PKGNAM.desktop $PKG/usr/share/applications/$PKGNAM.desktop
 
 # Add an icon
 install -Dm644 $CWD/$PKGNAM.png $PKG/usr/share/pixmaps/$PKGNAM.png

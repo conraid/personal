@@ -140,6 +140,9 @@ if [ -d $PKG/usr/info ]; then
   gzip -9 $PKG/usr/info/*.info || true
 fi
 
+# Remove perllocal.pod and other special files
+find $PKG -type f -print0 -name perllocal.pod -o -name ".packlist" -o -name "*.bs" | xargs rm -f || true
+
 mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
 shopt -s nullglob
 cp -a $DOCFILES $PKG/usr/doc/$PKGNAM-$VERSION 2>/dev/null || true
@@ -159,10 +162,10 @@ if [ -e $CWD/doinst.sh ]; then
 fi
 
 # Add a desktop file
-install -Dm744 $CWD/$PKGNAM.desktop $PKG/usr/share/applications/$PKGNAM.desktop
+install -Dm755 $CWD/$PKGNAM.desktop $PKG/usr/share/applications/$PKGNAM.desktop
 
 # Add an icon
-install -Dm744 $CWD/$PKGNAM.png $PKG/usr/share/pixmaps/$PKGNAM.png
+install -Dm644 $CWD/$PKGNAM.png $PKG/usr/share/pixmaps/$PKGNAM.png
 for size in {16,22,24,32,36,48}; do
   install -Dm644 desktop/$PRGNAM${size}.png $PKG/usr/share/icons/hicolor/${size}x${size}/apps/$PRGNAM.png
 done
