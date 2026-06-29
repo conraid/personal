@@ -131,8 +131,16 @@ cd ..
 # Don't ship .la files:
 rm -f $PKG/{,usr/}lib${LIBDIRSUFFIX}/*.la
 
-find $PKG -type f -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF | cut -f 1 -d : | xargs -r -d "\n" strip --strip-unneeded 2> /dev/null || true
-find $PKG -type f -print0 | xargs -0 file | grep "current ar archive" | cut -f 1 -d : | xargs -r -d "\n" strip -g 2> /dev/null || true
+# Stripping ELF binaries and libraries
+find $PKG -type f -exec file {} + | grep -E "ELF|archive" | cut -f 1 -d : | while read -r binary ; do
+  if file "$binary" | grep -q "shared object"; then
+    strip --strip-unneeded "$binary" 2>/dev/null || true
+  elif file "$binary" | grep -q "archive"; then
+    strip -g "$binary" 2>/dev/null || true
+  else
+    strip --strip-all "$binary" 2>/dev/null || true
+  fi
+done
 
 if [ -d $PKG/usr/man ]; then
   find $PKG/usr/man -type f -exec chmod 644 {} \; -exec gzip -9 {} \;
