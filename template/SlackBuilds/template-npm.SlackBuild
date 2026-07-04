@@ -118,17 +118,22 @@ find $PKG -type f -print0 -name "package.json" \
 
 # Remove prebuilds not matching our platform
 if [ -d "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" ]; then
-  find "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" -type d -name "prebuilds" | while read -r PREPATH; do
+find "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" -type d -name "prebuilds" | while read -r PREPATH; do
     for DIR in "$PREPATH"/*/; do
       [ -d "$DIR" ] || continue
       DIR_NAME=$(basename "$DIR")
-      if [ "$DIR_NAME" != "$NODE_PLAT" ]; then
+      # Check if the directory name contains our platform string
+      # and exclude musl libc builds since Slackware uses glibc
+      if [[ "$DIR_NAME" != *"$NODE_PLAT"* || "$DIR_NAME" == *"-musl"* ]]; then
         echo "  Removing unused platform: $DIR_NAME"
         rm -rf "$DIR"
       fi
     done
   done
 fi
+
+# Fix permissions
+find $PKG/usr/lib${LIBDIRSUFFIX}/node_modules/$PRGNAM -type f -name "*.node" -exec chmod 755 {} +
 
 # Find all ELF binaries and remove insecure references to /tmp
 find "$PKG" -type f | while read -r file; do
@@ -143,6 +148,9 @@ mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
 shopt -s nullglob
 #cp -a $DOCFILES $PKG/usr/doc/$PKGNAM-$VERSION 2>/dev/null || true
 shopt -u nullglob
+rm -f "$PKG/usr/doc/$PKGNAM-$VERSION"/INSTALL*
+find "$PKG/usr/doc/$PKGNAM-$VERSION" -type f -exec chmod 644 {} \;
+find "$PKG/usr/doc/$PKGNAM-$VERSION" -depth \( -type f -o -type d \) -empty -delete
 cat $CWD/$PKGNAM.SlackBuild > $PKG/usr/doc/$PKGNAM-$VERSION/$PRGNAM.SlackBuild
 
 mkdir -p $PKG/install

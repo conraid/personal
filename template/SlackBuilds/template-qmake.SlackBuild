@@ -117,20 +117,14 @@ find $PKG -type f -exec file {} + | grep -E "ELF|archive" | cut -f 1 -d : | whil
   fi
 done
 
-# Sane man e doc path
-if [ -d $PKG/usr/share/man ]; then
-  mv $PKG/usr/share/man $PKG/usr
-fi
-if [ -d $PKG/usr/share/doc ]; then
-  mv $PKG/usr/share/doc $PKG/usr
-  if [ -d $PKG/usr/doc/$PKGNAM ]; then
-    mv $PKG/usr/doc/$PKGNAM $PKG/usr/doc/$PKGNAM-$VERSION
-  fi
-fi
-
-if [ -d $PKG/usr/man ]; then
-  find $PKG/usr/man -type f -exec chmod 644 {} \; -exec gzip -9 {} \;
-  for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+# Compress manual pages, fix symlinks, and remove empty directories
+if [ -d "$PKG/usr/man" ]; then
+find -P "$PKG/usr/man" -type f -not -name "*.gz" -exec chmod 644 {} \; -exec gzip -9 {} \;
+  while read -r i; do
+    TARGET=$(readlink "$i")
+    ln -s "${TARGET}.gz" "${i}.gz" && rm "$i"
+  done < <(find -P "$PKG/usr/man" -type l 2>/dev/null)
+find -P "$PKG/usr/man" -depth -type d -empty -delete
 fi
 
 if [ -d $PKG/usr/info ]; then
@@ -145,6 +139,9 @@ mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
 shopt -s nullglob
 cp -a $DOCFILES $PKG/usr/doc/$PKGNAM-$VERSION 2>/dev/null || true
 shopt -u nullglob
+rm -f "$PKG/usr/doc/$PKGNAM-$VERSION"/INSTALL*
+find "$PKG/usr/doc/$PKGNAM-$VERSION" -type f -exec chmod 644 {} \;
+find "$PKG/usr/doc/$PKGNAM-$VERSION" -depth \( -type f -o -type d \) -empty -delete
 cat $CWD/$PKGNAM.SlackBuild > $PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild
 
 mkdir -p $PKG/install
