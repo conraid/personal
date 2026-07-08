@@ -27,7 +27,8 @@
 
 set -euo pipefail
 
-cd $(dirname $0) ; CWD=$(pwd)
+CWD=$(cd "$(dirname "$0")" && pwd)
+cd "$CWD" || exit
 
 PRGNAM=%PRGNAM%
 PKGNAM=${PRGNAM,,}
@@ -39,9 +40,7 @@ TMP=${TMP:-/tmp/pkg}
 PKG=$TMP/package-$PKGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
-DOCFILES="[A-Z][A-Z]* *.md ChangeLog"
-
-if [ -z ${ARCH:=""} ]; then
+if [ "${ARCH:=""}" = "" ]; then
   case "$( uname -m )" in
     i?86) ARCH=i686 ;;
     arm*) ARCH=arm ;;
@@ -68,12 +67,12 @@ else
   LIBDIRSUFFIX=""
 fi
 
-rm -rf $PKG
-mkdir -p $TMP $PKG $OUTPUT
-cd $TMP
-rm -rf $PRGNAM-$SRCVERSION
-tar xvf $CWD/$PRGNAM-$SRCVERSION.tar.gz || tar xvf $CWD/v$SRCVERSION.tar.gz
-cd $PRGNAM-$SRCVERSION
+rm -rf "$PKG"
+mkdir -p "$TMP" "$PKG" "$OUTPUT"
+cd "$TMP"
+rm -rf "$PRGNAM-$SRCVERSION"
+tar xvf "$CWD/$PRGNAM-$SRCVERSION".tar.gz || tar xvf "$CWD/v$SRCVERSION".tar.gz
+cd "$PRGNAM-$SRCVERSION"
 
 chown -R root:root .
 find . \
@@ -86,7 +85,7 @@ find . \
 if compgen -G "$CWD/patches/*.patch" > /dev/null; then
   if [ -f "$CWD/patches/series" ]; then
     while IFS= read -r PATCH; do
-      [ -z "$PATCH" ] && continue
+      [ "$PATCH" = "" ] && continue
       [ "${PATCH#\#}" != "$PATCH" ] && continue
       patch -p1 -i "$CWD/patches/$PATCH"
     done < "$CWD/patches/series"
@@ -103,7 +102,7 @@ mkdir meson-build
 cd meson-build
 meson setup \
   --prefix        /usr \
-  --libdir        lib${LIBDIRSUFFIX} \
+  --libdir        lib"$LIBDIRSUFFIX" \
   --libexecdir    /usr/libexec \
   --sysconfdir    /etc \
   --localstatedir /var \
@@ -129,10 +128,10 @@ DESTDIR=$PKG ninja install
 cd ..
 
 # Don't ship .la files:
-rm -f $PKG/{,usr/}lib${LIBDIRSUFFIX}/*.la
+rm -f "$PKG"/{,usr/}lib"$LIBDIRSUFFIX"/*.la
 
 # Stripping ELF binaries and libraries
-find $PKG -type f -exec file {} + | grep -E "ELF|archive" | cut -f 1 -d : | while read -r binary ; do
+find "$PKG" -type f -exec file {} + | grep -E "ELF|archive" | cut -f 1 -d : | while read -r binary ; do
   if file "$binary" | grep -q "shared object"; then
     strip --strip-unneeded "$binary" 2>/dev/null || true
   elif file "$binary" | grep -q "archive"; then
@@ -144,32 +143,33 @@ done
 
 # Compress manual pages, fix symlinks, and remove empty directories
 if [ -d "$PKG/usr/man" ]; then
-find -P "$PKG/usr/man" -type f -not -name "*.gz" -exec chmod 644 {} \; -exec gzip -9 {} \;
+  find -P "$PKG/usr/man" -type f -not -name "*.gz" -exec chmod 644 {} \; -exec gzip -9 {} \;
   while read -r i; do
     TARGET=$(readlink "$i")
+    case "$TARGET" in
+      "$PKG"/*) TARGET="${TARGET#"$PKG"}" ;;
+    esac
     ln -s "${TARGET}.gz" "${i}.gz" && rm "$i"
   done < <(find -P "$PKG/usr/man" -type l 2>/dev/null)
-find -P "$PKG/usr/man" -depth -type d -empty -delete
+  find -P "$PKG/usr/man" -depth -type d -empty -delete
 fi
 
-mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
-shopt -s nullglob
-cp -a $DOCFILES $PKG/usr/doc/$PKGNAM-$VERSION 2>/dev/null || true
-shopt -u nullglob
+mkdir -p "$PKG/usr/doc/$PKGNAM-$VERSION"
+cp -a README LICENSE COPYING ChangeLog ./*.md ChangeLog "$PKG/usr/doc/$PKGNAM-$VERSION" 2>/dev/null || true
 rm -f "$PKG/usr/doc/$PKGNAM-$VERSION"/INSTALL*
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -type f -exec chmod 644 {} \;
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -depth \( -type f -o -type d \) -empty -delete
-cat $CWD/$PKGNAM.SlackBuild > $PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild
+cat "$CWD/$PKGNAM".SlackBuild > "$PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM".SlackBuild
 
-mkdir -p $PKG/install
-cat $CWD/slack-desc > $PKG/install/slack-desc
-if [ -e $CWD/slack-required ]; then
-  cat $CWD/slack-required > $PKG/install/slack-required
+mkdir -p "$PKG"/install
+cat "$CWD"/slack-desc > "$PKG"/install/slack-desc
+if [ -e "$CWD"/slack-required ]; then
+  cat "$CWD"/slack-required > "$PKG"/install/slack-required
 fi
 # Add a doinst.sh
-if [ -e $CWD/doinst.sh ]; then
-  cat $CWD/doinst.sh > $PKG/install/doinst.sh
+if [ -e "$CWD"/doinst.sh ]; then
+  cat "$CWD"/doinst.sh > "$PKG"/install/doinst.sh
 fi
 
-cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PKGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+cd "$PKG"
+/sbin/makepkg -l y -c n "$OUTPUT/$PKGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}"

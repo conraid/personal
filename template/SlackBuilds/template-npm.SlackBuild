@@ -27,7 +27,8 @@
 
 set -euo pipefail
 
-cd $(dirname $0) ; CWD=$(pwd)
+CWD=$(cd "$(dirname "$0")" && pwd)
+cd "$CWD" || exit
 
 PRGNAM=%PRGNAM%
 PKGNAM=node-${PRGNAM,,}
@@ -39,9 +40,7 @@ TMP=${TMP:-/tmp/pkg}
 PKG=$TMP/package-$PKGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
-DOCFILES="[A-Z][A-Z]* *.md ChangeLog"
-
-if [ -z ${ARCH:=""} ]; then
+if [ "${ARCH:=""}" = "" ]; then
   case "$( uname -m )" in
     i?86) ARCH=i686 ;;
     arm*) ARCH=arm ;;
@@ -80,8 +79,8 @@ case "$ARCH" in
     ;;
 esac
 
-rm -rf $PKG
-mkdir -p $TMP $PKG $OUTPUT
+rm -rf "$PKG"
+mkdir -p "$TMP" "$PKG" "$OUTPUT"
 
 #cd $TMP
 #rm -rf $PRGNAM-$VERSION
@@ -90,27 +89,27 @@ mkdir -p $TMP $PKG $OUTPUT
 #
 #chown -R root:root .
 #find . \
-  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
-  -exec chmod 755 {} \; -o \
-  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
-  -exec chmod 644 {} \;
+  #  \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+  #  -exec chmod 755 {} \; -o \
+  #  \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+  #  -exec chmod 644 {} \;
 
-mkdir -p $PKG/usr/lib${LIBDIRSUFFIX}
+mkdir -p "$PKG/usr/lib$LIBDIRSUFFIX"
 
 #DESTDIR=$PKG npm install --user root --location=global --no-bin-links $(npm pack | tail -1)
-DESTDIR=$PKG npm install --user root --location=global --prefix $PKG/usr $CWD/$PRGNAM-$VERSION.tgz
+DESTDIR=$PKG npm install --user root --location=global --prefix "$PKG"/usr "$CWD/$PRGNAM-$VERSION".tgz
 
 # Remove root node_modules
-rm -rf $PKG/usr/lib${LIBDIRSUFFIX}/node_modules/root
+rm -rf "$PKG/usr/lib$LIBDIRSUFFIX"/node_modules/root
 
 # Remove empty dir
-rmdir $PKG/usr/etc || true
+rmdir "$PKG"/usr/etc || true
 
 # Remove unneeded files.
-find $PKG/usr \( -name '.git*' -o -name '.travis.yml' \) -exec rm -f {} \;
+find "$PKG"/usr \( -name '.git*' -o -name '.travis.yml' \) -exec rm -f {} \;
 
 # Remove occurrences of $PKG
-find $PKG -type f -print0 -name "package.json" \
+find "$PKG" -type f -print0 -name "package.json" \
   -exec sed -e "s|$TMP/$PRGNAM-build||" \
   -e "s|$TMP/$PRGNAM-$VERSION|/usr/lib${LIBDIRSUFFIX}/node_modules/${PRGNAM}|" \
   -e "s|$CWD||g" \
@@ -118,7 +117,7 @@ find $PKG -type f -print0 -name "package.json" \
 
 # Remove prebuilds not matching our platform
 if [ -d "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" ]; then
-find "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" -type d -name "prebuilds" | while read -r PREPATH; do
+  find "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" -type d -name "prebuilds" | while read -r PREPATH; do
     for DIR in "$PREPATH"/*/; do
       [ -d "$DIR" ] || continue
       DIR_NAME=$(basename "$DIR")
@@ -133,7 +132,7 @@ find "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" -type d -name "prebuilds" | whil
 fi
 
 # Fix permissions
-find $PKG/usr/lib${LIBDIRSUFFIX}/node_modules/$PRGNAM -type f -name "*.node" -exec chmod 755 {} +
+find "$PKG/usr/lib$LIBDIRSUFFIX/node_modules/$PRGNAM" -type f -name "*.node" -exec chmod 755 {} +
 
 # Find all ELF binaries and remove insecure references to /tmp
 find "$PKG" -type f | while read -r file; do
@@ -144,20 +143,18 @@ find "$PKG" -type f | while read -r file; do
   fi
 done
 
-mkdir -p $PKG/usr/doc/$PKGNAM-$VERSION
-shopt -s nullglob
-#cp -a $DOCFILES $PKG/usr/doc/$PKGNAM-$VERSION 2>/dev/null || true
-shopt -u nullglob
+mkdir -p "$PKG/usr/doc/$PKGNAM-$VERSION"
+#cp -a README LICENSE COPYING ChangeLog ./*.md ChangeLog $PKG/usr/doc/$PKGNAM-$VERSION 2>/dev/null || true
 rm -f "$PKG/usr/doc/$PKGNAM-$VERSION"/INSTALL*
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -type f -exec chmod 644 {} \;
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -depth \( -type f -o -type d \) -empty -delete
-cat $CWD/$PKGNAM.SlackBuild > $PKG/usr/doc/$PKGNAM-$VERSION/$PRGNAM.SlackBuild
+cat "$CWD/$PKGNAM".SlackBuild > "$PKG/usr/doc/$PKGNAM-$VERSION/$PRGNAM".SlackBuild
 
-mkdir -p $PKG/install
-cat $CWD/slack-desc > $PKG/install/slack-desc
-if [ -e $CWD/slack-required ]; then
-  cat $CWD/slack-required > $PKG/install/slack-required
+mkdir -p "$PKG"/install
+cat "$CWD"/slack-desc > "$PKG"/install/slack-desc
+if [ -e "$CWD"/slack-required ]; then
+  cat "$CWD"/slack-required > "$PKG"/install/slack-required
 fi
 
-cd $PKG
-/sbin/makepkg -l y -c n $OUTPUT/$PKGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}
+cd "$PKG"
+/sbin/makepkg -l y -c n "$OUTPUT/$PKGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}"
