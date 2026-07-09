@@ -156,7 +156,7 @@ if [ -d "$PKG"/usr/info ]; then
 fi
 
 # Remove perllocal.pod and other special files
-find "$PKG" -type f -print0 -name perllocal.pod -o -name ".packlist" -o -name "*.bs" | xargs rm -f || true
+find "$PKG" -type f \( -name "perllocal.pod" -o -name ".packlist" -o -name "*.bs" \) -print0 | xargs -0 rm -f
 
 mkdir -p "$PKG/usr/doc/$PKGNAM-$VERSION"
 cp -a README LICENSE COPYING ChangeLog ./*.md ChangeLog "$PKG/usr/doc/$PKGNAM-$VERSION" 2>/dev/null || true

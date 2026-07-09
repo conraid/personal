@@ -96,16 +96,14 @@ if compgen -G "$CWD/patches/*.patch" > /dev/null; then
   fi
 fi
 
-mkdir -p build
-cd build
-cmake -Wno-dev \
+cmake -B build \
   -DCMAKE_C_FLAGS_RELEASE:STRING="$SLKCFLAGS -DNDEBUG" \
   -DCMAKE_CXX_FLAGS_RELEASE:STRING="$SLKCFLAGS -DNDEBUG" \
   -DCMAKE_LD_FLAGS_RELEASE:STRING="-L/usr/lib${LIBDIRSUFFIX}" \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=/usr \
   -DCMAKE_INSTALL_DOCDIR=/usr/doc/"$PKGNAM-$VERSION" \
-  -DCMAKE_INSTALL_LIBDIR=/usr/lib"$LIBDIRSUFFIX" \
+  -DCMAKE_INSTALL_LIBDIR=lib"$LIBDIRSUFFIX" \
   -DCMAKE_INSTALL_MANDIR=/usr/man \
   -DMAN_INSTALL_DIR=/usr/man \
   -DSYSCONF_INSTALL_DIR=/etc \
@@ -118,11 +116,10 @@ cmake -Wno-dev \
   -DKDE_INSTALL_LIBDIR=/usr/lib"$LIBDIRSUFFIX" \
   -DKDE_INSTALL_PLUGINDIR=/usr/lib"$LIBDIRSUFFIX"/qt/plugins \
   -DKDE_INSTALL_INFODIR=/usr/info \
-  ..
+  -Wno-dev
 
-make
-make DESTDIR="$PKG" install
-cd ..
+cmake --build build
+DESTDIR="$PKG" cmake --install build
 
 # Don't ship .la files:
 rm -f "$PKG"/{,usr/}lib"$LIBDIRSUFFIX"/*.la

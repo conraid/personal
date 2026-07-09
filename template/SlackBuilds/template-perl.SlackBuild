@@ -129,8 +129,8 @@ if [ -d "$PKG/usr/man" ]; then
   find -P "$PKG/usr/man" -depth -type d -empty -delete
 fi
 
-# Remove perllocal.pod and other special files
-find "$PKG" -type f -print0 -name perllocal.pod -o -name ".packlist" -o -name "*.bs" | xargs rm -f || true
+# Remove perllocal.pod and other special files safely
+find "$PKG" -type f \( -name "perllocal.pod" -o -name ".packlist" -o -name "*.bs" \) -print0 | xargs -0 rm -f
 
 # Remove empty directories
 find "$PKG" -type f -print0 -depth -type d -empty -delete
