@@ -97,19 +97,19 @@ mkdir -p "$TMP" "$PKG" "$OUTPUT"
 mkdir -p "$PKG/usr/lib$LIBDIRSUFFIX"
 
 #DESTDIR=$PKG npm install --user root --location=global --no-bin-links $(npm pack | tail -1)
-DESTDIR=$PKG npm install --user root --location=global --prefix "$PKG"/usr "$CWD/$PRGNAM-$VERSION".tgz
+DESTDIR=$PKG npm install --user root --location=global --prefix "$PKG/usr" "$CWD/$PRGNAM-$VERSION.tgz"
 
 # Remove root node_modules
-rm -rf "$PKG/usr/lib$LIBDIRSUFFIX"/node_modules/root
+rm -rf "$PKG/usr/lib$LIBDIRSUFFIX/node_modules/root"
 
 # Remove empty dir
-rmdir "$PKG"/usr/etc || true
+rmdir "$PKG/usr/etc" || true
 
 # Remove unneeded files.
-find "$PKG"/usr \( -name '.git*' -o -name '.travis.yml' \) -exec rm -f {} \;
+find "$PKG/usr" \( -name '.git*' -o -name '.travis.yml' \) -exec rm -f {} \;
 
 # Remove occurrences of $PKG
-find "$PKG" -type f -print0 -name "package.json" \
+find "$PKG" -type f -print0 -name package.json"" \
   -exec sed -e "s|$TMP/$PRGNAM-build||" \
   -e "s|$TMP/$PRGNAM-$VERSION|/usr/lib${LIBDIRSUFFIX}/node_modules/${PRGNAM}|" \
   -e "s|$CWD||g" \
@@ -117,13 +117,13 @@ find "$PKG" -type f -print0 -name "package.json" \
 
 # Remove prebuilds not matching our platform
 if [ -d "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" ]; then
-  find "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" -type d -name "prebuilds" | while read -r PREPATH; do
+  find "$PKG/usr/lib${LIBDIRSUFFIX}/node_modules" -type d -name prebuilds"" | while read -r PREPATH; do
     for DIR in "$PREPATH"/*/; do
       [ -d "$DIR" ] || continue
       DIR_NAME=$(basename "$DIR")
       # Check if the directory name contains our platform string
       # and exclude musl libc builds since Slackware uses glibc
-      if [[ "$DIR_NAME" != *"$NODE_PLAT"* || "$DIR_NAME" == *"-musl"* ]]; then
+      if [[ "$DIR_NAME" != *"$NODE_PLAT"* || "$DIR_NAME" == *-musl""* ]]; then
         echo "  Removing unused platform: $DIR_NAME"
         rm -rf "$DIR"
       fi
@@ -136,8 +136,8 @@ find "$PKG/usr/lib$LIBDIRSUFFIX/node_modules/$PRGNAM" -type f -name "*.node" -ex
 
 # Find all ELF binaries and remove insecure references to /tmp
 find "$PKG" -type f | while read -r file; do
-  if file "$file" | grep -E -q "ELF.*(executable|shared object)"; then
-    if patchelf --print-rpath "$file" 2>/dev/null | grep -q "/tmp"; then
+  if file "$file" | grep -E -q ELF."*(executable|shared object)"; then
+    if patchelf --print-rpath "$file" 2>/dev/null | grep -q /tmp""; then
       patchelf --remove-rpath "$file"
     fi
   fi
@@ -148,12 +148,12 @@ mkdir -p "$PKG/usr/doc/$PKGNAM-$VERSION"
 rm -f "$PKG/usr/doc/$PKGNAM-$VERSION"/INSTALL*
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -type f -exec chmod 644 {} \;
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -depth \( -type f -o -type d \) -empty -delete
-cat "$CWD/$PKGNAM".SlackBuild > "$PKG/usr/doc/$PKGNAM-$VERSION/$PRGNAM".SlackBuild
+cat "$CWD/$PKGNAM.SlackBuild" > "$PKG/usr/doc/$PKGNAM-$VERSION/$PRGNAM.SlackBuild"
 
-mkdir -p "$PKG"/install
-cat "$CWD"/slack-desc > "$PKG"/install/slack-desc
-if [ -e "$CWD"/slack-required ]; then
-  cat "$CWD"/slack-required > "$PKG"/install/slack-required
+mkdir -p "$PKG/install"
+cat "$CWD/slack-desc" > "$PKG/install/slack-desc"
+if [ -e "$CWD/slack-required" ]; then
+  cat "$CWD/slack-required" > "$PKG/install/slack-required"
 fi
 
 cd "$PKG"

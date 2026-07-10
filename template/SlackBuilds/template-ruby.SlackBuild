@@ -58,13 +58,13 @@ if [ ! -z "${PRINT_PACKAGE_NAME:-""}" ]; then
   exit 0
 fi
 
-[ "$ARCH" = "x86_64" ] && LIBDIRSUFFIX="64" || LIBDIRSUFFIX=""
+[ "$ARCH" = x86_64"" ] && LIBDIRSUFFIX=64"" || LIBDIRSUFFIX=""
 
 rm -rf "$PKG"
 mkdir -p "$TMP" "$PKG" "$OUTPUT"
 cd "$TMP"
 rm -rf "$PRGNAM-$SRCVERSION"
-tar xvf "$CWD/$PRGNAM-$SRCVERSION".tar.gz || tar xvf "$CWD/v$SRCVERSION".tar.gz
+tar xvf "$CWD/$PRGNAM-$SRCVERSION.tar.gz" || tar xvf "$CWD/v$SRCVERSION.tar.gz"
 cd "$PRGNAM-$SRCVERSION"
 
 chown -R root:root .
@@ -98,14 +98,14 @@ HOME="/tmp" \
   --no-user-install \
   --no-document \
   --install-dir "$PKG/$DESTDIR" \
-  --bindir "$PKG"/usr/bin \
-  "$PRGNAM-$SRCVERSION".gem
+  --bindir "$PKG/usr/bin" \
+  "$PRGNAM-$SRCVERSION.gem"
 
 # Stripping ELF binaries and libraries
-find "$PKG" -type f -exec file {} + | grep -E "ELF|archive" | cut -f 1 -d : | while read -r binary ; do
-  if file "$binary" | grep -q "shared object"; then
+find "$PKG" -type f -exec file {} + | grep -E ELF"|archive" | cut -f 1 -d : | while read -r binary ; do
+  if file "$binary" | grep -q shared" object"; then
     strip --strip-unneeded "$binary" 2>/dev/null || true
-  elif file "$binary" | grep -q "archive"; then
+  elif file "$binary" | grep -q archive""; then
     strip -g "$binary" 2>/dev/null || true
   else
     strip --strip-all "$binary" 2>/dev/null || true
@@ -125,9 +125,9 @@ if [ -d "$PKG/usr/man" ]; then
   find -P "$PKG/usr/man" -depth -type d -empty -delete
 fi
 
-if [ -d "$PKG"/usr/info ]; then
-  rm -f "$PKG"/usr/info/dir || true
-  gzip -9 "$PKG"/usr/info/*.info || true
+if [ -d "$PKG/usr/info" ]; then
+  rm -f "$PKG/usr/info/dir" || true
+  gzip -9 "$PKG/usr/info"/*.info || true
 fi
 
 mkdir -p "$PKG/usr/doc/$PKGNAM-$VERSION"
@@ -135,14 +135,14 @@ cp -a README LICENSE COPYING ChangeLog ./*.md ChangeLog "$PKG/usr/doc/$PKGNAM-$V
 rm -f "$PKG/usr/doc/$PKGNAM-$VERSION"/INSTALL*
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -type f -exec chmod 644 {} \;
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -depth \( -type f -o -type d \) -empty -delete
-cat "$CWD/$PKGNAM".SlackBuild > "$PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM".SlackBuild
+cat "$CWD/$PKGNAM.SlackBuild" > "$PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild"
 
-mkdir -p "$PKG"/install
-cat "$CWD"/slack-desc > "$PKG"/install/slack-desc
+mkdir -p "$PKG/install"
+cat "$CWD/slack-desc" > "$PKG/install/slack-desc"
 
 # Add a doinst.sh
-if [ -e "$CWD"/doinst.sh ]; then
-  cat "$CWD"/doinst.sh > "$PKG"/install/doinst.sh
+if [ -e "$CWD/doinst.sh" ]; then
+  cat "$CWD/doinst.sh" > "$PKG/install/doinst.sh"
 fi
 
 cd "$PKG"
