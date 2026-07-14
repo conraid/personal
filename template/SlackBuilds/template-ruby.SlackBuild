@@ -58,7 +58,7 @@ if [ ! -z "${PRINT_PACKAGE_NAME:-""}" ]; then
   exit 0
 fi
 
-[ "$ARCH" = x86_64"" ] && LIBDIRSUFFIX=64"" || LIBDIRSUFFIX=""
+[ "$ARCH" = "x86_64" ] && LIBDIRSUFFIX="64" || LIBDIRSUFFIX=""
 
 rm -rf "$PKG"
 mkdir -p "$TMP" "$PKG" "$OUTPUT"
@@ -105,7 +105,7 @@ HOME="/tmp" \
 find "$PKG" -type f -exec file {} + | grep -E ELF"|archive" | cut -f 1 -d : | while read -r binary ; do
   if file "$binary" | grep -q shared" object"; then
     strip --strip-unneeded "$binary" 2>/dev/null || true
-  elif file "$binary" | grep -q archive""; then
+  elif file "$binary" | grep -q "archive"; then
     strip -g "$binary" 2>/dev/null || true
   else
     strip --strip-all "$binary" 2>/dev/null || true
