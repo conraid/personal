@@ -26,6 +26,7 @@
 # Latest version of this SlackBuild at https://codeberg.org/conraid/SlackBuilds
 
 set -euo pipefail
+
 CWD=$(cd "$(dirname "$0")" && pwd)
 cd "$CWD" || exit
 
@@ -51,22 +52,8 @@ fi
 # the name of the created package would be, and then exit. This information
 # could be useful to other scripts.
 if [ ! -z "${PRINT_PACKAGE_NAME:-""}" ]; then
-  echo "$PKGNAM-$VERSION-$ARCH-$BUILD.txz "
+  echo "$PKGNAM-$VERSION-$ARCH-$BUILD.txz"
   exit 0
-fi
-
-if [ "$ARCH" = "i686" ]; then
-  SLKCFLAGS="-O2 -march=pentium4 -mtune=generic"
-  LIBDIRSUFFIX=""
-elif [ "$ARCH" = "x86_64" ]; then
-  SLKCFLAGS="-O2 -march=x86-64 -mtune=generic -fPIC -pipe"
-  LIBDIRSUFFIX="64"
-elif [ "$ARCH" = "aarch64" ]; then
-  SLKCFLAGS="-O2 -fPIC"
-  LIBDIRSUFFIX="64"
-else
-  SLKCFLAGS="-O2"
-  LIBDIRSUFFIX=""
 fi
 
 rm -rf "$PKG"
@@ -83,38 +70,20 @@ find . \
   \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
   -exec chmod 644 {} \;
 
-# Apply patches
-if compgen -G "$CWD/patches/*.patch" > /dev/null; then
-  if [ -f "$CWD/patches/series" ]; then
-    while IFS= read -r PATCH; do
-      [ "$PATCH" = "" ] && continue
-      [ "${PATCH#\#}" != "$PATCH" ] && continue
-      patch -p1 -i "$CWD/patches/$PATCH"
-    done < "$CWD/patches/series"
-  else
-    for PATCH in "$CWD/patches"/*.patch; do
-      patch -p1 -i "$PATCH"
-    done
-  fi
-fi
+pear install -P "$PKG" "$CWD/$PKGNAM-$VERSION.tgz"
 
-# Don't ship .la files:
-rm -f "$PKG"/{,usr/}lib"$LIBDIRSUFFIX"/*.la
+cd "$PKG/usr/share/pear"
+find . -mindepth 1 -maxdepth 1 -name ".*" -exec rm -rf {} +
 
 # Stripping ELF binaries and libraries
-find "$PKG" -type f -print0 | while IFS= read -r -d '' binary; do
-  desc=$(file -b "$binary" 2>/dev/null) || continue
-  case "$desc" in
-    *"current ar archive"*)
-      strip -g "$binary" 2>/dev/null || true
-      ;;
-    *"shared object"*)
-      strip --strip-unneeded "$binary" 2>/dev/null || true
-      ;;
-    *ELF*)
-      strip --strip-all "$binary" 2>/dev/null || true
-      ;;
-  esac
+find "$PKG" -type f -exec file {} + | grep -E ELF"|archive" | cut -f 1 -d : | while read -r binary ; do
+  if file "$binary" | grep -q shared" object"; then
+    strip --strip-unneeded "$binary" 2>/dev/null || true
+  elif file "$binary" | grep -q "archive"; then
+    strip -g "$binary" 2>/dev/null || true
+  else
+    strip --strip-all "$binary" 2>/dev/null || true
+  fi
 done
 
 # Compress manual pages, fix symlinks, and remove empty directories
@@ -130,8 +99,16 @@ if [ -d "$PKG/usr/man" ]; then
   find -P "$PKG/usr/man" -depth -type d -empty -delete
 fi
 
+if [ -d "$PKG/usr/info" ]; then
+  rm -f "$PKG/usr/info/dir" || true
+  gzip -9 "$PKG/usr/info"/*.info || true
+fi
+
+# Remove empty directories
+find "$PKG" -type f -print0 -depth -type d -empty -delete
+
 mkdir -p "$PKG/usr/doc/$PKGNAM-$VERSION"
-cp -a README LICENSE COPYING  ./*.md ChangeLog "$PKG/usr/doc/$PKGNAM-$VERSION" 2>/dev/null || true
+cp -a README LICENSE COPYING ChangeLog ./*.md ChangeLog "$PKG/usr/doc/$PKGNAM-$VERSION" 2>/dev/null || true
 rm -f "$PKG/usr/doc/$PKGNAM-$VERSION"/INSTALL*
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -type f -exec chmod 644 {} \;
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -depth \( -type f -o -type d \) -empty -delete

@@ -26,11 +26,12 @@
 # Latest version of this SlackBuild at https://codeberg.org/conraid/SlackBuilds
 
 set -euo pipefail
+
 CWD=$(cd "$(dirname "$0")" && pwd)
 cd "$CWD" || exit
 
 PRGNAM=%PRGNAM%
-PKGNAM=${PRGNAM,,}
+PKGNAM=ruby-${PRGNAM,,}
 SRCVERSION=%VERSION%
 VERSION="${SRCVERSION//-/_}"
 BUILD=${BUILD:-1}
@@ -39,11 +40,13 @@ TMP=${TMP:-/tmp/pkg}
 PKG=$TMP/package-$PKGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
+# Insert document files in this variable
+
 if [ "${ARCH:=""}" = "" ]; then
-  case "$( uname -m )" in
+  case "$(uname -m)" in
     i?86) ARCH=i686 ;;
     arm*) ARCH=arm ;;
-    *) ARCH=$( uname -m ) ;;
+    *) ARCH=$(uname -m) ;;
   esac
 fi
 
@@ -51,23 +54,11 @@ fi
 # the name of the created package would be, and then exit. This information
 # could be useful to other scripts.
 if [ ! -z "${PRINT_PACKAGE_NAME:-""}" ]; then
-  echo "$PKGNAM-$VERSION-$ARCH-$BUILD.txz "
+  echo "$PKGNAM-$VERSION-$ARCH-$BUILD.txz"
   exit 0
 fi
 
-if [ "$ARCH" = "i686" ]; then
-  SLKCFLAGS="-O2 -march=pentium4 -mtune=generic"
-  LIBDIRSUFFIX=""
-elif [ "$ARCH" = "x86_64" ]; then
-  SLKCFLAGS="-O2 -march=x86-64 -mtune=generic -fPIC -pipe"
-  LIBDIRSUFFIX="64"
-elif [ "$ARCH" = "aarch64" ]; then
-  SLKCFLAGS="-O2 -fPIC"
-  LIBDIRSUFFIX="64"
-else
-  SLKCFLAGS="-O2"
-  LIBDIRSUFFIX=""
-fi
+[ "$ARCH" = "x86_64" ] && LIBDIRSUFFIX="64" || LIBDIRSUFFIX=""
 
 rm -rf "$PKG"
 mkdir -p "$TMP" "$PKG" "$OUTPUT"
@@ -83,38 +74,42 @@ find . \
   \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
   -exec chmod 644 {} \;
 
-# Apply patches
-if compgen -G "$CWD/patches/*.patch" > /dev/null; then
-  if [ -f "$CWD/patches/series" ]; then
-    while IFS= read -r PATCH; do
-      [ "$PATCH" = "" ] && continue
-      [ "${PATCH#\#}" != "$PATCH" ] && continue
-      patch -p1 -i "$CWD/patches/$PATCH"
-    done < "$CWD/patches/series"
-  else
-    for PATCH in "$CWD/patches"/*.patch; do
-      patch -p1 -i "$PATCH"
-    done
-  fi
+# Locate the .gemspec file inside the source directory
+gemspecs=( *.gemspec )
+GEMSPEC="${gemspecs[0]}"
+
+# Check if the array expansion returned a literal "*.gemspec" (meaning no file exists)
+if [ ! -e "$GEMSPEC" ]; then
+  echo "Error: No .gemspec file found in $PWD"
+  exit 1
 fi
 
-# Don't ship .la files:
-rm -f "$PKG"/{,usr/}lib"$LIBDIRSUFFIX"/*.la
+gem build "$GEMSPEC"
+
+# Get the system's default Ruby gem directory
+DESTDIR="$(ruby -e 'puts Gem.default_dir')"
+
+HOME="/tmp" \
+  GEM_HOME="$DESTDIR" GEM_PATH="$DESTDIR" \
+  gem install \
+  --local \
+  --no-update-sources \
+  --backtrace \
+  --no-user-install \
+  --no-document \
+  --install-dir "$PKG/$DESTDIR" \
+  --bindir "$PKG/usr/bin" \
+  "$PRGNAM-$SRCVERSION.gem"
 
 # Stripping ELF binaries and libraries
-find "$PKG" -type f -print0 | while IFS= read -r -d '' binary; do
-  desc=$(file -b "$binary" 2>/dev/null) || continue
-  case "$desc" in
-    *"current ar archive"*)
-      strip -g "$binary" 2>/dev/null || true
-      ;;
-    *"shared object"*)
-      strip --strip-unneeded "$binary" 2>/dev/null || true
-      ;;
-    *ELF*)
-      strip --strip-all "$binary" 2>/dev/null || true
-      ;;
-  esac
+find "$PKG" -type f -exec file {} + | grep -E ELF"|archive" | cut -f 1 -d : | while read -r binary ; do
+  if file "$binary" | grep -q shared" object"; then
+    strip --strip-unneeded "$binary" 2>/dev/null || true
+  elif file "$binary" | grep -q "archive"; then
+    strip -g "$binary" 2>/dev/null || true
+  else
+    strip --strip-all "$binary" 2>/dev/null || true
+  fi
 done
 
 # Compress manual pages, fix symlinks, and remove empty directories
@@ -130,8 +125,13 @@ if [ -d "$PKG/usr/man" ]; then
   find -P "$PKG/usr/man" -depth -type d -empty -delete
 fi
 
+if [ -d "$PKG/usr/info" ]; then
+  rm -f "$PKG/usr/info/dir" || true
+  gzip -9 "$PKG/usr/info"/*.info || true
+fi
+
 mkdir -p "$PKG/usr/doc/$PKGNAM-$VERSION"
-cp -a README LICENSE COPYING  ./*.md ChangeLog "$PKG/usr/doc/$PKGNAM-$VERSION" 2>/dev/null || true
+cp -a README LICENSE COPYING ChangeLog ./*.md ChangeLog "$PKG/usr/doc/$PKGNAM-$VERSION" 2>/dev/null || true
 rm -f "$PKG/usr/doc/$PKGNAM-$VERSION"/INSTALL*
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -type f -exec chmod 644 {} \;
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -depth \( -type f -o -type d \) -empty -delete
@@ -139,9 +139,6 @@ cat "$CWD/$PKGNAM.SlackBuild" > "$PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuil
 
 mkdir -p "$PKG/install"
 cat "$CWD/slack-desc" > "$PKG/install/slack-desc"
-if [ -e "$CWD/slack-required" ]; then
-  cat "$CWD/slack-required" > "$PKG/install/slack-required"
-fi
 
 # Add a doinst.sh
 if [ -e "$CWD/doinst.sh" ]; then

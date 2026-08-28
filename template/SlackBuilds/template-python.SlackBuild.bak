@@ -26,11 +26,12 @@
 # Latest version of this SlackBuild at https://codeberg.org/conraid/SlackBuilds
 
 set -euo pipefail
+
 CWD=$(cd "$(dirname "$0")" && pwd)
 cd "$CWD" || exit
 
 PRGNAM=%PRGNAM%
-PKGNAM=${PRGNAM,,}
+PKGNAM=${PRGNAM,,} PKGNAM=python-${PKGNAM//_/-}
 SRCVERSION=%VERSION%
 VERSION="${SRCVERSION//-/_}"
 BUILD=${BUILD:-1}
@@ -40,10 +41,10 @@ PKG=$TMP/package-$PKGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
 if [ "${ARCH:=""}" = "" ]; then
-  case "$( uname -m )" in
+  case "$(uname -m)" in
     i?86) ARCH=i686 ;;
     arm*) ARCH=arm ;;
-    *) ARCH=$( uname -m ) ;;
+    *) ARCH=$(uname -m) ;;
   esac
 fi
 
@@ -59,10 +60,7 @@ if [ "$ARCH" = "i686" ]; then
   SLKCFLAGS="-O2 -march=pentium4 -mtune=generic"
   LIBDIRSUFFIX=""
 elif [ "$ARCH" = "x86_64" ]; then
-  SLKCFLAGS="-O2 -march=x86-64 -mtune=generic -fPIC -pipe"
-  LIBDIRSUFFIX="64"
-elif [ "$ARCH" = "aarch64" ]; then
-  SLKCFLAGS="-O2 -fPIC"
+  SLKCFLAGS="-O2 -march=x86-64 -mtune=generic -fPIC -pipe -fomit-frame-pointer"
   LIBDIRSUFFIX="64"
 else
   SLKCFLAGS="-O2"
@@ -73,7 +71,7 @@ rm -rf "$PKG"
 mkdir -p "$TMP" "$PKG" "$OUTPUT"
 cd "$TMP"
 rm -rf "$PRGNAM-$SRCVERSION"
-tar xvf "$CWD/$PRGNAM-$SRCVERSION.tar.gz" || tar xvf "$CWD/v$SRCVERSION.tar.gz"
+tar xvf "$CWD/$PRGNAM-$SRCVERSION.tar.gz"
 cd "$PRGNAM-$SRCVERSION"
 
 chown -R root:root .
@@ -98,23 +96,18 @@ if compgen -G "$CWD/patches/*.patch" > /dev/null; then
   fi
 fi
 
-# Don't ship .la files:
-rm -f "$PKG"/{,usr/}lib"$LIBDIRSUFFIX"/*.la
+python3 -m build --wheel --no-isolation
+python3 -m installer --destdir "$PKG" dist/*.whl
 
 # Stripping ELF binaries and libraries
-find "$PKG" -type f -print0 | while IFS= read -r -d '' binary; do
-  desc=$(file -b "$binary" 2>/dev/null) || continue
-  case "$desc" in
-    *"current ar archive"*)
-      strip -g "$binary" 2>/dev/null || true
-      ;;
-    *"shared object"*)
-      strip --strip-unneeded "$binary" 2>/dev/null || true
-      ;;
-    *ELF*)
-      strip --strip-all "$binary" 2>/dev/null || true
-      ;;
-  esac
+find "$PKG" -type f -exec file {} + | grep -E ELF"|archive" | cut -f 1 -d : | while read -r binary ; do
+  if file "$binary" | grep -q shared" object"; then
+    strip --strip-unneeded "$binary" 2>/dev/null || true
+  elif file "$binary" | grep -q "archive"; then
+    strip -g "$binary" 2>/dev/null || true
+  else
+    strip --strip-all "$binary" 2>/dev/null || true
+  fi
 done
 
 # Compress manual pages, fix symlinks, and remove empty directories
@@ -131,7 +124,7 @@ if [ -d "$PKG/usr/man" ]; then
 fi
 
 mkdir -p "$PKG/usr/doc/$PKGNAM-$VERSION"
-cp -a README LICENSE COPYING  ./*.md ChangeLog "$PKG/usr/doc/$PKGNAM-$VERSION" 2>/dev/null || true
+cp -a README LICENSE COPYING ChangeLog ./*.md ChangeLog "$PKG/usr/doc/$PKGNAM-$VERSION" 2> /dev/null || true
 rm -f "$PKG/usr/doc/$PKGNAM-$VERSION"/INSTALL*
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -type f -exec chmod 644 {} \;
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -depth \( -type f -o -type d \) -empty -delete
@@ -141,11 +134,6 @@ mkdir -p "$PKG/install"
 cat "$CWD/slack-desc" > "$PKG/install/slack-desc"
 if [ -e "$CWD/slack-required" ]; then
   cat "$CWD/slack-required" > "$PKG/install/slack-required"
-fi
-
-# Add a doinst.sh
-if [ -e "$CWD/doinst.sh" ]; then
-  cat "$CWD/doinst.sh" > "$PKG/install/doinst.sh"
 fi
 
 cd "$PKG"
