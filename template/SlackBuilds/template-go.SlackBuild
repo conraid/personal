@@ -148,7 +148,7 @@ if [ -f Makefile ]; then
 else
   # Compile all packages in the module
   go build -ldflags="$LIB_LDFLAGS" -o "$PKG/usr/bin/$PRGNAM" .
-  # go build -ldflags="$LIB_LDFLAGS" -o "$PKG/usr/bin/"$PRGNAM ./cmd/$PRGNAM
+  # go build -ldflags="$LIB_LDFLAGS" -o "$PKG/usr/bin/$PRGNAM" ./cmd/$PRGNAM
 fi
 
 # Optional: Clean up the temporary Go cache after build to save space
