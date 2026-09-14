@@ -1,7 +1,0 @@
-
-In template-ruby.SlackBuild line 61:
-[ "$ARCH" = "x86_64" ] && LIBDIRSUFFIX="64" || LIBDIRSUFFIX=""
-                                               ^----------^ SC2034 (warning): LIBDIRSUFFIX appears unused. Verify use (or export if used externally).
-
-For more information:
-  https://www.shellcheck.net/wiki/SC2034 -- LIBDIRSUFFIX appears unused. Veri...
