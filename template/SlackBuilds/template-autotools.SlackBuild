@@ -169,9 +169,9 @@ find "$PKG" -type f \( -name "perllocal.pod" -o -name ".packlist" -o -name "*.bs
 mkdir -p "$PKG/usr/doc/$PKGNAM-$VERSION"
 cp -a README LICENSE COPYING  ./*.md ChangeLog "$PKG/usr/doc/$PKGNAM-$VERSION" 2>/dev/null || true
 rm -f "$PKG/usr/doc/$PKGNAM-$VERSION"/INSTALL*
+cat "$CWD/$PKGNAM.SlackBuild" > "$PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild"
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -type f -exec chmod 644 {} \;
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -depth \( -type f -o -type d \) -empty -delete
-cat "$CWD/$PKGNAM.SlackBuild" > "$PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild"
 
 mkdir -p "$PKG/install"
 cat "$CWD/slack-desc" > "$PKG/install/slack-desc"

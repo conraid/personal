@@ -1,0 +1,7 @@
+
+In template-tree-sitter.SlackBuild line 68:
+  SLKCFLAGS="-O2"
+  ^-------^ SC2034 (warning): SLKCFLAGS appears unused. Verify use (or export if used externally).
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2034 -- SLKCFLAGS appears unused. Verify ...

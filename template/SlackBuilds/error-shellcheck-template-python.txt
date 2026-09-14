@@ -1,0 +1,12 @@
+
+In template-python.SlackBuild line 69:
+  SLKCFLAGS="-O2"
+  ^-------^ SC2034 (warning): SLKCFLAGS appears unused. Verify use (or export if used externally).
+
+
+In template-python.SlackBuild line 70:
+  LIBDIRSUFFIX=""
+  ^----------^ SC2034 (warning): LIBDIRSUFFIX appears unused. Verify use (or export if used externally).
+
+For more information:
+  https://www.shellcheck.net/wiki/SC2034 -- LIBDIRSUFFIX appears unused. Veri...
