@@ -23,7 +23,7 @@
 # with this program (most likely, a file named COPYING). If not, see
 # <http://www.gnu.org/licenses/>.
 #
-# Latest version of this SlackBuild at https://codeberg.org/conraid/SlackBuilds
+# Latest version of this SlackBuild at https://forge.slackware.nl/conraid/SlackBuilds
 
 set -euo pipefail
 
@@ -40,7 +40,7 @@ TMP=${TMP:-/tmp/pkg}
 PKG=$TMP/package-$PKGNAM
 OUTPUT=${OUTPUT:-/tmp}
 
-if [ "${ARCH:=""}" = "" ]; then
+if [[ -z ${ARCH:-} ]]; then
   case "$( uname -m )" in
     i?86) ARCH=i686 ;;
     arm*) ARCH=arm ;;
@@ -70,12 +70,12 @@ else
   LIBDIRSUFFIX=""
 fi
 
-rm -rf "$PKG"
-mkdir -p "$TMP" "$PKG" "$OUTPUT"
-cd "$TMP"
-rm -rf "$PRGNAM-$SRCVERSION"
+rm -rf -- "$PKG"
+mkdir -p -- "$TMP" "$PKG" "$OUTPUT"
+cd -- "$TMP"
+rm -rf -- "$PRGNAM-$SRCVERSION"
 tar xvf "$CWD/$PRGNAM-$SRCVERSION.tar.gz" || tar xvf "$CWD/v$SRCVERSION.tar.gz"
-cd "$PRGNAM-$SRCVERSION"
+cd -- "$PRGNAM-$SRCVERSION"
 
 chown -R root:root .
 find . \
@@ -88,7 +88,7 @@ find . \
 if compgen -G "$CWD/patches/*.patch" > /dev/null; then
   if [ -f "$CWD/patches/series" ]; then
     while IFS= read -r PATCH; do
-      [ "$PATCH" = "" ] && continue
+      [[ -z $PATCH ]] && continue
       [ "${PATCH#\#}" != "$PATCH" ] && continue
       patch -p1 -i "$CWD/patches/$PATCH"
     done < "$CWD/patches/series"
@@ -131,7 +131,7 @@ DESTDIR=$PKG ninja install
 cd ..
 
 # Don't ship .la files:
-rm -f "$PKG"/{,usr/}lib"$LIBDIRSUFFIX"/*.la
+rm -f -- "$PKG"/{,usr/}lib"$LIBDIRSUFFIX"/*.la
 
 # Stripping ELF binaries and libraries
 find "$PKG" -type f -print0 | while IFS= read -r -d '' binary; do
@@ -157,19 +157,19 @@ if [ -d "$PKG/usr/man" ]; then
     case "$TARGET" in
       "$PKG"/*) TARGET="${TARGET#"$PKG"}" ;;
     esac
-    ln -s "${TARGET}.gz" "${i}.gz" && rm "$i"
+    ln -s "${TARGET}.gz" "${i}.gz" && rm -- "$i"
   done < <(find -P "$PKG/usr/man" -type l 2>/dev/null)
   find -P "$PKG/usr/man" -depth -type d -empty -delete
 fi
 
-mkdir -p "$PKG/usr/doc/$PKGNAM-$VERSION"
+mkdir -p -- "$PKG/usr/doc/$PKGNAM-$VERSION"
 cp -a README LICENSE COPYING  ./*.md ChangeLog "$PKG/usr/doc/$PKGNAM-$VERSION" 2>/dev/null || true
-rm -f "$PKG/usr/doc/$PKGNAM-$VERSION"/INSTALL*
+rm -f -- "$PKG/usr/doc/$PKGNAM-$VERSION"/INSTALL*
 cat "$CWD/$PKGNAM.SlackBuild" > "$PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild"
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -type f -exec chmod 644 {} \;
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -depth \( -type f -o -type d \) -empty -delete
 
-mkdir -p "$PKG/install"
+mkdir -p -- "$PKG/install"
 cat "$CWD/slack-desc" > "$PKG/install/slack-desc"
 if [ -e "$CWD/slack-required" ]; then
   cat "$CWD/slack-required" > "$PKG/install/slack-required"
@@ -179,5 +179,5 @@ if [ -e "$CWD/doinst.sh" ]; then
   cat "$CWD/doinst.sh" > "$PKG/install/doinst.sh"
 fi
 
-cd "$PKG"
+cd -- "$PKG"
 /sbin/makepkg -l y -c n "$OUTPUT/$PKGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-txz}"
