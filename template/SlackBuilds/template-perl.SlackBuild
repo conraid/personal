@@ -56,17 +56,9 @@ if [ ! -z "${PRINT_PACKAGE_NAME:-""}" ]; then
   exit 0
 fi
 
-if [ "$ARCH" = "i686" ]; then
-  SLKCFLAGS="-O2 -march=pentium4 -mtune=generic"
-  LIBDIRSUFFIX=""
-elif [ "$ARCH" = "x86_64" ]; then
-  SLKCFLAGS="-O2 -march=x86-64 -mtune=generic -fPIC -pipe"
-  LIBDIRSUFFIX="64"
-elif [ "$ARCH" = "aarch64" ]; then
-  SLKCFLAGS="-O2 -fPIC"
+if [ "$ARCH" = "x86_64" ] || [ "$ARCH" = "aarch64" ]; then
   LIBDIRSUFFIX="64"
 else
-  SLKCFLAGS="-O2"
   LIBDIRSUFFIX=""
 fi
 
@@ -144,7 +136,7 @@ find "$PKG" -type f \( -name "perllocal.pod" -o -name ".packlist" -o -name "*.bs
 find "$PKG" -type f -print0 -depth -type d -empty -delete
 
 mkdir -p -- "$PKG/usr/doc/$PKGNAM-$VERSION"
-cp -a README LICENSE COPYING  ./*.md ChangeLog "$PKG/usr/doc/$PKGNAM-$VERSION" 2>/dev/null || true
+cp -a Changes README LICENSE COPYING ChangeLog "$PKG/usr/doc/$PKGNAM-$VERSION" 2>/dev/null || true
 rm -f -- "$PKG/usr/doc/$PKGNAM-$VERSION"/INSTALL*
 cat "$CWD/$PKGNAM.SlackBuild" > "$PKG/usr/doc/$PKGNAM-$VERSION/$PKGNAM.SlackBuild"
 find "$PKG/usr/doc/$PKGNAM-$VERSION" -type f -exec chmod 644 {} \;
