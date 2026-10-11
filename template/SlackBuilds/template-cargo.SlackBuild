@@ -103,27 +103,13 @@ mkdir -p ".cargo"
 export CARGO_HOME=".cargo"
 export CFLAGS="$SLKCFLAGS"
 export CXXFLAGS="$SLKCFLAGS"
-TARGET="$(rustc --print host-tuple)"
 
-cargo fetch \
-  --locked \
-  --target "$TARGET"
-# --manifest-path path/to/Cargo.toml
-
-cargo build \
+cargo auditable build \
   --release \
-  --frozen \
-  --offline \
-  --target "$TARGET"
+  --locked
 # --manifest-path path/to/Cargo.toml
 
-cargo install \
-  --frozen \
-  --offline \
-  --no-track \
-  --root "$PKG/usr" \
-  --path="." \
-  --target "$TARGET"
+install -Dm0755 "target/release/$PRGNAM" "$PKG/usr/bin/$PRGNAM"
 
 # Cleanup CARGO_HOME and possible unnecessary artifacts in $PKG.
 rm -rf -- "$CARGO_HOME"
